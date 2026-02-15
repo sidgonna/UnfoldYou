@@ -1,0 +1,145 @@
+.card {
+    position: relative;
+    background: var(--surface);
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0px var(--shadow);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.4s ease;
+    overflow: hidden;
+}
+
+.card.accepted {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+}
+
+.card.declined {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.typeBadge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--lavender);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 8px;
+    border: 2px solid var(--ink);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.avatar {
+    font-size: 2.2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--canvas);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.name {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+}
+
+.time {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.message {
+    font-style: italic;
+    font-size: 13px;
+    color: var(--storm);
+    margin: 8px 0 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.declineBtn {
+    flex: 0.4;
+    padding: 10px 0;
+    background: transparent;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--error, #e74c3c);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.declineBtn:hover {
+    background: rgba(231, 76, 60, 0.08);
+}
+
+.declineBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.acceptBtn {
+    flex: 0.6;
+    padding: 10px 0;
+    background: var(--ember);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--shadow);
+    transition: all 0.2s;
+}
+
+.acceptBtn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px var(--shadow);
+}
+
+.acceptBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.tappable {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.tappable:hover {
+    opacity: 0.7;
+}

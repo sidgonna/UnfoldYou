@@ -1,0 +1,118 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+}
+
+.modal {
+    background: var(--surface);
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0px var(--shadow);
+    border-radius: 16px;
+    padding: 28px 24px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.description {
+    font-size: 14px;
+    color: var(--storm);
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.whatHappens {
+    background: var(--canvas);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.whatTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+
+.list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: var(--storm);
+    line-height: 1.6;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.unfoldBtn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--lavender), var(--ember));
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px var(--shadow);
+    transition: all 0.2s;
+}
+
+.unfoldBtn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px var(--shadow);
+}
+
+.cancelBtn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.cancelBtn:hover {
+    text-decoration: underline;
+    color: var(--storm);
+}

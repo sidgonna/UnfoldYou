@@ -1,0 +1,204 @@
+.card {
+    position: relative;
+    background: var(--surface);
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0px var(--shadow);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.4s ease;
+}
+
+.card.success {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+}
+
+.card.expired {
+    opacity: 0.5;
+}
+
+.typeBadge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--honey);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 8px;
+    border: 2px solid var(--ink);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.avatar {
+    font-size: 2.2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--canvas);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+}
+
+.subtitle {
+    font-size: 13px;
+    color: var(--storm);
+}
+
+.expiredText {
+    font-size: 13px;
+    color: var(--error, #e74c3c);
+    font-weight: 600;
+}
+
+.expandBtn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    background: var(--honey);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.expandBtn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0px var(--shadow);
+}
+
+.codeSection {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px dashed var(--muted);
+}
+
+.codeLabel {
+    font-size: 13px;
+    color: var(--storm);
+    margin-bottom: 10px;
+}
+
+.codeInputs {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.codeInputs.shake {
+    animation: shakeAnim 0.5s ease;
+}
+
+@keyframes shakeAnim {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-8px);
+    }
+
+    40% {
+        transform: translateX(8px);
+    }
+
+    60% {
+        transform: translateX(-6px);
+    }
+
+    80% {
+        transform: translateX(6px);
+    }
+}
+
+.codeBox {
+    width: 44px;
+    height: 52px;
+    text-align: center;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 22px;
+    font-weight: 700;
+    border: 3px solid var(--ink);
+    border-radius: 8px;
+    background: var(--canvas);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+    text-transform: uppercase;
+}
+
+.codeBox:focus {
+    border-color: var(--ember);
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+.error {
+    font-size: 12px;
+    color: var(--error, #e74c3c);
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.connectBtn {
+    width: 100%;
+    padding: 12px;
+    background: var(--ember);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--shadow);
+    transition: all 0.2s;
+}
+
+.connectBtn:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px var(--shadow);
+}
+
+.connectBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.tappable {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.tappable:hover {
+    opacity: 0.7;
+}

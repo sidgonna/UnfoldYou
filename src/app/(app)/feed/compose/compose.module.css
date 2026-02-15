@@ -1,0 +1,223 @@
+.compose {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg);
+    padding-top: var(--space-xl);
+}
+
+.compose-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xl);
+}
+
+.compose-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.compose-cancel {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: var(--space-sm);
+}
+
+.compose-cancel:hover {
+    color: var(--text-primary);
+}
+
+/* Template picker */
+
+.template-section {
+    margin-bottom: var(--space-lg);
+}
+
+.template-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: var(--space-sm);
+}
+
+.template-row {
+    display: flex;
+    gap: var(--space-sm);
+    overflow-x: auto;
+    padding-bottom: var(--space-sm);
+    scrollbar-width: none;
+}
+
+.template-row::-webkit-scrollbar {
+    display: none;
+}
+
+.template-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.template-swatch.active {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px var(--brand-primary);
+    transform: scale(1.1);
+}
+
+/* Card preview */
+
+.preview-area {
+    /* flex: 1; Removed to keep button close to card */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-xl);
+}
+
+.card-preview {
+    width: 100%;
+    max-width: 400px;
+    min-height: 280px;
+    border-radius: 20px;
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.card-preview-textarea {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    font-family: var(--font-heading);
+    line-height: 1.6;
+    resize: none;
+    flex: 1;
+    outline: none;
+    min-height: 180px;
+}
+
+.card-preview-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.card-preview-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-md);
+}
+
+.char-count {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+}
+
+.char-count.warning {
+    color: #f59e0b;
+}
+
+.char-count.danger {
+    color: #ef4444;
+}
+
+.card-watermark {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: lowercase;
+}
+
+/* Post button */
+
+.compose-actions {
+    padding: var(--space-md) 0;
+    padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+}
+
+.post-btn {
+    width: 100%;
+    padding: var(--space-md) var(--space-xl);
+    border-radius: 16px;
+    border: none;
+    background: var(--gradient-brand);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.post-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.post-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+}
+
+/* Success overlay */
+
+.success-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    gap: var(--space-lg);
+    animation: fadeIn 0.3s ease;
+}
+
+.success-icon {
+    font-size: 4rem;
+    animation: bounceIn 0.5s ease;
+}
+
+.success-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.success-sub {
+    color: var(--text-muted);
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0);
+    }
+
+    60% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.error-bar {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: var(--space-sm) var(--space-md);
+    color: #ef4444;
+    font-size: 0.85rem;
+    margin-bottom: var(--space-md);
+    text-align: center;
+}

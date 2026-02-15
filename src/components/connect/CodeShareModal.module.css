@@ -1,0 +1,144 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+}
+
+.modal {
+    background: var(--surface);
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0px var(--shadow);
+    border-radius: 16px;
+    padding: 28px 24px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    font-size: 15px;
+    color: var(--storm);
+    margin-bottom: 20px;
+}
+
+.codeDisplay {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    background: var(--honey);
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0px var(--ink);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+
+.codeChar {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 2px;
+    min-width: 32px;
+    text-align: center;
+}
+
+.copyBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 24px;
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+}
+
+.copyBtn:hover {
+    background: var(--canvas);
+}
+
+.copyBtn.copied {
+    background: var(--sage);
+    color: white;
+    border-color: var(--sage);
+}
+
+.timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 14px;
+    color: var(--storm);
+    margin-bottom: 12px;
+}
+
+.timerIcon {
+    font-size: 14px;
+    animation: timerPulse 2s ease infinite;
+}
+
+@keyframes timerPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.shareHint {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+.doneBtn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.doneBtn:hover {
+    color: var(--storm);
+}

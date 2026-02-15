@@ -1,0 +1,126 @@
+.feed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xl);
+    padding-top: var(--space-md);
+}
+
+.feed-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.compose-fab {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    border: none;
+    background: var(--gradient-brand);
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
+    transition: all 0.3s ease;
+}
+
+.compose-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(168, 85, 247, 0.5);
+}
+
+.card-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding-bottom: calc(80px + var(--space-xl));
+}
+
+.empty-feed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    gap: var(--space-md);
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    opacity: 0.6;
+}
+
+.empty-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.empty-desc {
+    color: var(--text-muted);
+    max-width: 280px;
+    line-height: 1.5;
+}
+
+.empty-cta {
+    margin-top: var(--space-md);
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+    gap: var(--space-md);
+}
+
+.error-state {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 16px;
+    padding: var(--space-lg);
+    text-align: center;
+    color: #ef4444;
+}
+
+.new-posts-badge {
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-ember);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(232, 93, 58, 0.4);
+    cursor: pointer;
+    z-index: 100;
+    animation: slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.new-posts-badge:hover {
+    transform: translateX(-50%) scale(1.05);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}

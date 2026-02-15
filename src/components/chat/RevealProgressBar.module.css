@@ -1,0 +1,76 @@
+.container {
+    padding: 8px 16px 10px;
+    background: var(--surface);
+    border-bottom: 2px solid var(--ink);
+}
+
+.stages {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    transition: all 0.3s;
+}
+
+.stage.active {
+    background: var(--lavender);
+    box-shadow: 0 0 8px rgba(200, 170, 255, 0.4);
+}
+
+.stage.next {
+    background: var(--canvas);
+    animation: pulse 2s ease infinite;
+}
+
+.stage.locked {
+    background: var(--canvas);
+    opacity: 0.4;
+}
+
+.icon {
+    font-size: 14px;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(200, 170, 255, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(200, 170, 255, 0);
+    }
+}
+
+.progressTrack {
+    height: 6px;
+    background: var(--canvas);
+    border: 1px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--lavender), var(--ember));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.label {
+    font-size: 11px;
+    color: var(--storm);
+    text-align: center;
+}

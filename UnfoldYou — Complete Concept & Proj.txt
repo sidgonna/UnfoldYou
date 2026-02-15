@@ -1,0 +1,626 @@
+UnfoldYou — Complete Concept & Project Blueprint
+A social discovery platform where strangers unfold into real connections — anonymously, psychologically, authentically.
+
+1. Executive Summary
+UnfoldYou is a hybrid social/dating app that sits at the intersection of three powerful market trends:
+
+Trend	Market Size (2025)	CAGR
+Anonymous social apps	~$5B	15%
+Ephemeral content (Stories)	Dominant format across all platforms	—
+Psychology-based dating	Growing segment led by REDDI, SoulMatcher, LoL	—
+UnfoldYou differentiates itself by combining anonymous self-expression (POV Cards), psychology-driven compatibility (Love Soul), and progressive identity reveal (Unfold mechanic) into a single coherent experience.
+
+Core thesis: People form better connections when they first connect through thoughts, emotions, and values — not photos and bios. UnfoldYou makes the anonymous layer the primary social layer and treats real identity as a reward earned through genuine interaction.
+
+2. Competitive Landscape & Positioning
+Direct Competitors
+App	Overlap	What UnfoldYou Does Differently
+Bumble/Hinge	Profile-based dating	UnfoldYou leads with anonymous POV cards, not photos
+Whisper/Fizz	Anonymous expression	UnfoldYou adds structured connections + progressive reveal
+BeReal	Authenticity/ephemeral	UnfoldYou is text-first with deeper psychological layer
+REDDI	Attachment-style matching	UnfoldYou uses broader psychology (coping, conflict, love language)
+Slowly	Pen-pal / slow reveal	UnfoldYou has real-time social feed + modern UX
+Unique Value Proposition (UVP)
+"Express anonymously. Connect psychologically. Unfold authentically."
+
+No other app combines all three pillars in a single product. UnfoldYou creates a journey from shadow → soul → self.
+
+3. Refined Feature Architecture
+3.1 Onboarding Flow
+Sign Up\n(Email + OTP)
+Real Profile Setup
+Anonymous Profile Setup
+Love Soul\n(Psychology Questions)
+Enter the App\n(Feed + You)
+Name
+DOB → Auto-calc Age
+Height
+Gender
+Location (approx)
+Profile Picture
+Voice Note:\nPerfect Sunday Morning
+Habits
+Why Are You Here?
+Playful Spark
+Find My Crowd
+Explore Love
+Something Real
+Shadow Name
+Avatar (generated/chosen)
+Interests\n(music, movies, books, etc.)
+Tags\n(pronouns, social energy)
+Bio
+Sound of the Week
+Q1: When overwhelmed, I need...
+Q2: I feel seen when someone...
+Q3: In a fight, my instinct is...
+Final: What is love to you?
+Polished Onboarding Details
+Field	Details & Rationale
+Email + OTP	Passwordless auth via Supabase OTP. No passwords to breach. Rate-limit OTP to prevent abuse (max 3 attempts / 10 min).
+DOB → Age	Store DOB, display calculated age. Enforce 18+ at signup. Never expose exact DOB to other users.
+Height	Optional. Display in cm/ft based on locale.
+Gender	Multi-select: Male, Female, Non-binary, Prefer not to say, Custom. Stored privately; used for filtering only when user opts in.
+Location	Coarse-grained only (city-level). Never expose GPS coordinates. Users can manually set preferred location.
+Profile Picture	Stored in Supabase Storage with signed URLs.
+Voice Note	30–60 second recording. The prompt "Describe your version of a perfect Sunday morning" is warm, non-threatening, and reveals personality. Stored as WebM/MP3 in Supabase Storage.
+Habits	Structured multi-select: Drinking, Smoking, Fitness, Diet, Sleep schedule, Screen time. Shown as badges.
+Why Are You Here	Single-select with distinct emotional tones. Affects feed algorithm weighting.
+Shadow Name	3–20 chars, unique, no real-name validation. This becomes the user's anonymous handle.
+Avatar	Curated set of illustrated avatars (50+ options across diverse styles). No user photo uploads for anonymous profile.
+Interests	Tag-based selection from curated categories: Music genres, Movie genres, Book genres, Sports, Art, Gaming, Travel, Food, Tech, Fashion, etc. Min 3, max 15.
+Tags	Pronouns (he/she/they/custom) + Social energy (introvert/extrovert/ambivert). Displayed as badges on anonymous profile.
+Bio	150-char max. Shown on anonymous profile.
+Sound of the Week	User can paste a Spotify/YouTube link or pick from curated list. Displayed as playable embed on anonymous profile. Updated weekly.
+Love Soul — Psychology Engine
+IMPORTANT
+
+These questions are not arbitrary. Each maps to a well-established psychological framework.
+
+#	Question	Framework	What It Reveals
+1	When I've had a terrible day or feel overwhelmed, I usually need...	Attachment Style (Bowlby)	Whether user seeks comfort (anxious), withdraws (avoidant), or self-regulates (secure)
+2	I feel most seen and appreciated when someone...	Love Language (Chapman)	Primary love language: words, acts, gifts, time, or touch
+3	In a disagreement or fight, my instinct is to...	Conflict Style (Thomas-Kilmann)	Competing, accommodating, avoiding, collaborating, or compromising
+F	What is love to you?	Open-ended / NLP	Sentiment analysis + keyword extraction. Stored as a "soul print" for compatibility matching
+Answer Format: Questions 1–3 are presented as multiple-choice with nuanced options (not binary). Question F is free-text (50–300 chars).
+
+Compatibility Score (calculated offline):
+
+Q1–Q3 answers feed into a weighted compatibility vector
+Q-Final is analyzed for semantic similarity using embeddings (future enhancement)
+Score is never shown as a number — instead, it influences feed ranking and "soul match" suggestions
+3.2 App Navigation (Post-Onboarding)
+Bottom Navigation
+📰 Feed
+🔗 Connect
+💬 Chat
+👤 You
+Tab	Purpose
+Feed	POV Card stream from strangers + "Add Your POV" FAB
+Connect	Search + connect flows (Stranger / Known)
+Chat	Active conversations, sorted by recency
+You	Anonymous profile view + saved POV cards + settings
+3.3 POV Cards — The Core Content Unit
+POV Cards are the app's heartbeat. They are temporary emotional snapshots — like tweets with soul.
+
+Card Anatomy
+plaintext
+┌──────────────────────────────────┐
+│  [Avatar]  Shadow Name     ⏱ 23h │  ← Header: anonymous identity + TTL countdown
+│──────────────────────────────────│
+│                                  │
+│   "The best conversations happen │  ← Content: user-authored text (max 500 chars)
+│    at 2am when the world is      │
+│    quiet and the walls come      │
+│    down."                        │
+│                                  │
+│──────────────────────────────────│
+│  ❤️ 42    🔗 Share    💾 Save    │  ← Interactions (context-dependent)
+│──────────────────────────────────│
+│  unfold                          │  ← Branding watermark
+└──────────────────────────────────┘
+Card Behavior Rules
+Rule	Details
+Lifespan	24 hours from creation. Countdown timer visible on card.
+Auto-delete	Supabase cron job (pg_cron) hard-deletes card content after 24h. Media removed from storage.
+Save to Profile	Creator can save at any time before expiry. Saved cards appear in "You" tab like Instagram posts. Saving extends lifespan indefinitely.
+Templates	6–10 color/gradient templates the user picks before posting. Template choice defines card background (dark moody, warm sunset, ocean blue, forest green, neon pink, monochrome, etc.)
+Creator View	Interactions: Share + Save (no self-liking)
+Other User View	Interactions: ❤️ Like + Share (no save — only creator can save)
+Share	Generates a shareable image (card rendered as PNG/WebP with UnfoldYou branding). Deep link back to app. Share sheet for WhatsApp, Instagram Stories, Twitter, etc.
+Content Moderation	Deferred to a future phase. Basic user reporting available at launch.
+Rule	Details
+Lifespan	24 hours from creation. Countdown timer visible on card.
+Auto-delete	Supabase cron job (pg_cron) hard-deletes card content after 24h. Media removed from storage.
+Save to Profile	Creator can save at any time before expiry. Saved cards appear in "You" tab like Instagram posts. Saving extends lifespan indefinitely.
+Templates	6–10 color/gradient templates the user picks before posting. Template choice defines card background (dark moody, warm sunset, ocean blue, forest green, neon pink, monochrome, etc.)
+Creator View	Interactions: Share + 
+
+Save
+ (no self-liking)
+Other User View	Interactions: ❤️ Like + Share (no save — only creator can save)
+Share	Generates a shareable image (card rendered as PNG/WebP with UnfoldYou branding). Deep link back to app. Share sheet for WhatsApp, Instagram Stories, Twitter, etc.
+Content Moderation	Deferred to a future phase. Basic user reporting available at launch.
+Create POV Card Flow
+Tap + FAB on Feed
+Compose Screen
+Type content\n(max 500 chars)
+Choose Template\n(color/gradient picker)
+Preview Card
+Tap 'Post'
+Card appears in Feed\n(24h countdown starts)
+Share sheet appears\n(optional external share)
+3.4 Connection System
+IMPORTANT
+
+Connection is the bridge from anonymous to real. It must feel intentional, safe, and exciting.
+
+Two Connection Methods
+Stranger
+Known
+Accept
+User taps Connect icon
+Pop-up:\nStranger or Known?
+Method A:\nDiscover + Request
+Method B:\nSearch + Code
+Browse POV Cards
+Tap on profile
+Send connect request\n+ personal message
+Recipient accepts/declines
+Chat opens\n(Anonymous mode)
+Progressive Reveal\n(milestone-based)
+Mutual acceptance\n→ Full profiles shared
+Search by username/shadow name
+Send connect request
+System generates\n6-digit alphanumeric code
+User A shares code\nvia WhatsApp/SMS
+User B receives request\n+ enters code to accept
+Chat opens\n(Full profile mode)
+Method A — Stranger Connection (Progressive Reveal)
+This is the signature mechanic. Here's the detailed reveal schedule:
+
+Stage	Milestone	What Gets Revealed
+Shadow	Connection accepted	Shadow name, avatar, tags, bio, interests
+Whisper	25 messages exchanged (combined)	Voice note ("Perfect Sunday Morning")
+Glimpse	50 messages + 3 days since connection	"Why are you here" + Habits
+Soul	100 messages + 7 days	Love Soul answers (Q1–Q3) + "What is love to you?"
+Unfold	Mutual tap on "Unfold" button	Full real profile: name, photo, age, height, location
+TIP
+
+The reveal milestones are cumulative (not either/or). Both users must reach the message threshold together. Day-count prevents rapid-fire gaming of the system.
+
+Anti-gaming safeguards:
+
+Messages must be >5 characters to count toward milestone
+Consecutive identical messages don't count
+Bot-detection heuristic: messages sent faster than 1 per 3 seconds are flagged
+"Unfold" requires mutual action — both users must tap it (like Tinder's match mechanic)
+Method B — Known Connection (Code-Based)
+Step	Details
+Code format	6-character alphanumeric (A-Z, 0-9), expires in 30 minutes
+Code delivery	Displayed in-app. User manually shares via WhatsApp/SMS (we don't send it for them — respects privacy)
+Code entry	Recipient enters code to confirm identity. Wrong code = 3 attempts max, then request expires
+Post-connection	Full profiles visible immediately. No progressive reveal (they already know each other)
+3.5 Chat System
+Chat Display Modes
+Progressive Reveal
+🎭 Anonymous Chat\n(Stranger Connection)
+👤 Full Chat\n(Known / Unfolded)
+Feature	Anonymous Chat	Full Chat
+Header	Avatar + Shadow Name	Profile Picture + Real Name
+Profile access	Tapping header shows only revealed info	Full profile visible
+Message types	Text, emoji, voice messages	Text, emoji, voice messages, images
+Read receipts	Delayed (shown after 5 min)	Instant
+Typing indicator	"Someone is typing..."	"{Name} is typing..."
+Media sharing	Disabled until "Glimpse" stage	Enabled
+Reveal milestones	Celebration animation + info card on each stage	N/A
+Report/Block	Always available — works even in anonymous mode	Always available
+Real-time Architecture:
+
+Built on Supabase Realtime (Postgres Changes + Broadcast)
+Messages inserted into messages table with RLS enforcing sender/receiver access
+Presence tracked via Supabase Realtime Presence API
+Typing indicators via Broadcast (ephemeral, not persisted)
+4. Security & Privacy Design
+CAUTION
+
+Since UnfoldYou handles deeply personal data (psychology answers, voice notes, location), security is not optional — it's the product's foundation.
+
+4.1 Authentication
+Layer	Implementation
+Email + OTP	Supabase Auth with magic link / 6-digit OTP. No passwords stored.
+Rate limiting	Max 3 OTP requests per email per 10 minutes. Exponential backoff on failures.
+Session management	JWT with 1-hour expiry + refresh tokens. Stored in httpOnly cookies (Next.js middleware).
+Device tracking	Log device fingerprint on login. Alert on new device access.
+4.2 Data Protection
+Data Type	At Rest	In Transit	Access Control
+Email	Supabase Auth (hashed)	TLS 1.3	Only auth system
+Profile data	Postgres with RLS	TLS 1.3	Owner + progressive reveal rules
+Psychology answers	Encrypted column (pgcrypto)	TLS 1.3	Owner + revealed connections
+Voice notes	Supabase Storage (signed URLs, 1h expiry)	TLS 1.3	Owner + revealed connections
+Photos	Supabase Storage (signed URLs)	TLS 1.3	Owner + unfolded connections
+Chat messages	Postgres with RLS	TLS 1.3 + Realtime WebSocket	Sender + Receiver only
+Location	City-level only, never GPS	TLS 1.3	Approximate, after full unfold
+POV Cards	Postgres (auto-deleted after 24h)	TLS 1.3	Public (anonymous) while active
+4.3 Safety (v1 — No AI Moderation)
+NOTE
+
+AI-based content moderation (NSFW detection, hate speech filtering, voice note scanning) is deferred to a future phase. v1 relies on user-driven safety mechanisms.
+
+Layer	Method
+User reporting	Report button on POV cards, profiles, and chat messages. Reports queued for manual review.
+User blocking	Instant block from any context. Blocked users can't see your cards or send requests.
+Rate limits	Max 5 POV Cards per day per user. Max 20 connect requests per day.
+4.4 Anonymity Guarantees
+Principle	Implementation
+Shadow ≠ Real	No database FK between shadow_name and real_name columns. Linked only via user_id (UUID).
+No data leaks in anonymous mode	RLS policies enforce: before "Unfold," querying a user returns ONLY anonymous profile fields. Real profile fields return null.
+IP isolation	Server never logs IP alongside user activity. Supabase Edge Functions handle request routing.
+No screenshot detection	Not technically enforceable; instead, watermark anonymous chat with invisible steganographic user ID. If leaked, source is traceable.
+5. Database Schema (Supabase / PostgreSQL)
+NOTE
+
+Below is the logical schema. All tables have RLS enabled. auth.users is Supabase's built-in auth table.
+
+Core Tables
+sql
+-- Real profile (private until "Unfold")
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    dob DATE NOT NULL,
+    age INTEGER GENERATED ALWAYS AS (DATE_PART('year', AGE(dob))) STORED,
+    height_cm INTEGER,
+    gender TEXT NOT NULL,
+    location_city TEXT,
+    location_country TEXT,
+    profile_picture_url TEXT,
+    voice_note_url TEXT,
+    habits JSONB DEFAULT '{}',
+    intent TEXT CHECK (intent IN ('playful_spark', 'find_my_crowd', 'explore_love', 'something_real')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- Anonymous profile (public-facing)
+CREATE TABLE shadow_profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    shadow_name TEXT UNIQUE NOT NULL,
+    avatar_id TEXT NOT NULL,
+    interests TEXT[] DEFAULT '{}',
+    pronouns TEXT,
+    social_energy TEXT CHECK (social_energy IN ('introvert', 'extrovert', 'ambivert')),
+    bio TEXT CHECK (CHAR_LENGTH(bio) <= 150),
+    sound_of_week_url TEXT,
+    sound_of_week_updated_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- Love Soul (psychology answers)
+CREATE TABLE love_soul (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    q1_overwhelmed TEXT NOT NULL,       -- Attachment style answer
+    q2_seen_appreciated TEXT NOT NULL,  -- Love language answer
+    q3_disagreement TEXT NOT NULL,      -- Conflict style answer
+    q_final_love TEXT NOT NULL,         -- Open-ended: "What is love to you?"
+    attachment_style TEXT,              -- Computed: secure/anxious/avoidant
+    love_language TEXT,                 -- Computed: words/acts/gifts/time/touch
+    conflict_style TEXT,               -- Computed: competing/accommodating/avoiding/collaborating/compromising
+    compatibility_vector FLOAT[] DEFAULT '{}',  -- Numeric vector for matching
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- POV Cards (ephemeral content)
+CREATE TABLE pov_cards (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    creator_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL CHECK (CHAR_LENGTH(content) <= 500),
+    template TEXT NOT NULL,            -- Template identifier (color/gradient)
+    is_saved BOOLEAN DEFAULT FALSE,    -- Creator saved to profile
+    saved_at TIMESTAMPTZ,
+    likes_count INTEGER DEFAULT 0,
+    expires_at TIMESTAMPTZ NOT NULL,   -- created_at + 24 hours
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    is_active BOOLEAN GENERATED ALWAYS AS (
+        CASE WHEN is_saved = TRUE THEN TRUE
+             WHEN expires_at > NOW() THEN TRUE
+             ELSE FALSE
+        END
+    ) STORED
+);
+-- POV Card likes
+CREATE TABLE pov_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    card_id UUID NOT NULL REFERENCES pov_cards(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(card_id, user_id)
+);
+-- Connections
+CREATE TABLE connections (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    requester_id UUID NOT NULL REFERENCES auth.users(id),
+    recipient_id UUID NOT NULL REFERENCES auth.users(id),
+    connection_type TEXT NOT NULL CHECK (connection_type IN ('stranger', 'known')),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'expired')),
+    request_message TEXT,              -- Personal message (stranger flow)
+    verification_code TEXT,            -- 6-char code (known flow)
+    code_expires_at TIMESTAMPTZ,       -- Code expiry (known flow)
+    code_attempts INTEGER DEFAULT 0,
+    reveal_stage TEXT DEFAULT 'shadow' CHECK (reveal_stage IN ('shadow', 'whisper', 'glimpse', 'soul', 'unfold')),
+    message_count INTEGER DEFAULT 0,   -- Combined message count
+    connected_at TIMESTAMPTZ,          -- When accepted
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(requester_id, recipient_id)
+);
+-- Chat messages
+CREATE TABLE messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    connection_id UUID NOT NULL REFERENCES connections(id) ON DELETE CASCADE,
+    sender_id UUID NOT NULL REFERENCES auth.users(id),
+    content TEXT NOT NULL,
+    message_type TEXT DEFAULT 'text' CHECK (message_type IN ('text', 'emoji', 'voice', 'image', 'system')),
+    media_url TEXT,
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- Reports & moderation
+CREATE TABLE reports (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    reporter_id UUID NOT NULL REFERENCES auth.users(id),
+    reported_user_id UUID REFERENCES auth.users(id),
+    reported_card_id UUID REFERENCES pov_cards(id),
+    reason TEXT NOT NULL,
+    details TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewing', 'resolved', 'dismissed')),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- Blocked users
+CREATE TABLE blocked_users (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    blocker_id UUID NOT NULL REFERENCES auth.users(id),
+    blocked_id UUID NOT NULL REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(blocker_id, blocked_id)
+);
+Key RLS Policies
+sql
+-- Profiles: only owner can read their own real profile
+-- Other users can only see profiles of UNFOLDED connections
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own profile"
+    ON profiles FOR SELECT
+    USING (auth.uid() = id);
+CREATE POLICY "Users can view unfolded connections' profiles"
+    ON profiles FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM connections
+            WHERE status = 'accepted'
+            AND reveal_stage = 'unfold'
+            AND (
+                (requester_id = auth.uid() AND recipient_id = profiles.id)
+                OR (recipient_id = auth.uid() AND requester_id = profiles.id)
+            )
+        )
+    );
+-- Shadow profiles: publicly readable (anonymous layer)
+ALTER TABLE shadow_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view shadow profiles"
+    ON shadow_profiles FOR SELECT
+    USING (TRUE);
+CREATE POLICY "Users can update own shadow profile"
+    ON shadow_profiles FOR UPDATE
+    USING (auth.uid() = id);
+-- Messages: only sender or receiver
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can read their own messages"
+    ON messages FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM connections
+            WHERE connections.id = messages.connection_id
+            AND (connections.requester_id = auth.uid() OR connections.recipient_id = auth.uid())
+        )
+    );
+-- POV Cards: active cards are publicly readable, creator can manage
+ALTER TABLE pov_cards ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Active cards are publicly readable"
+    ON pov_cards FOR SELECT
+    USING (is_active = TRUE);
+CREATE POLICY "Users can create their own cards"
+    ON pov_cards FOR INSERT
+    WITH CHECK (auth.uid() = creator_id);
+CREATE POLICY "Creators can update their own cards"
+    ON pov_cards FOR UPDATE
+    USING (auth.uid() = creator_id);
+Automated Cleanup (pg_cron)
+sql
+-- Run every hour: hard-delete expired, unsaved POV cards
+SELECT cron.schedule(
+    'cleanup-expired-pov-cards',
+    '0 * * * *',
+    $$
+    DELETE FROM pov_cards
+    WHERE expires_at < NOW()
+    AND is_saved = FALSE;
+    $$
+);
+-- Run every hour: expire pending connection requests older than 7 days
+SELECT cron.schedule(
+    'expire-stale-requests',
+    '0 * * * *',
+    $$
+    UPDATE connections
+    SET status = 'expired'
+    WHERE status = 'pending'
+    AND created_at < NOW() - INTERVAL '7 days';
+    $$
+);
+-- Run every hour: expire verification codes
+SELECT cron.schedule(
+    'expire-verification-codes',
+    '30 * * * *',
+    $$
+    UPDATE connections
+    SET status = 'expired'
+    WHERE connection_type = 'known'
+    AND status = 'pending'
+    AND code_expires_at < NOW();
+    $$
+);
+6. Key Architecture Decisions
+6.1 Tech Stack Rationale
+Component	Choice	Why
+Frontend	Next.js 14 (App Router)	SSR for SEO (shared POV cards), RSC for performance, API routes for server logic
+Auth	Supabase Auth (OTP)	Built-in email OTP, JWT handling, integrates with RLS
+Database	Supabase Postgres	RLS, real-time subscriptions, pg_cron, pgcrypto, extensions
+Storage	Supabase Storage	Signed URLs, integration with RLS, CDN-backed
+Real-time	Supabase Realtime	Postgres Changes for messages, Broadcast for typing indicators
+Hosting	Vercel	Native Next.js support, Edge Functions, global CDN
+Moderation	Deferred — future phase	AI-based text + image classification (planned)
+6.2 Progressive Reveal — Technical Implementation
+The reveal system works through a database function that recalculates stage transitions:
+
+sql
+CREATE OR REPLACE FUNCTION check_reveal_progression()
+RETURNS TRIGGER AS $$
+DECLARE
+    conn RECORD;
+    days_since_connection INTEGER;
+BEGIN
+    SELECT * INTO conn FROM connections WHERE id = NEW.connection_id;
+    
+    IF conn.connection_type = 'known' THEN
+        RETURN NEW;  -- No progressive reveal for known connections
+    END IF;
+    
+    days_since_connection := DATE_PART('day', NOW() - conn.connected_at);
+    
+    -- Update message count
+    UPDATE connections SET message_count = message_count + 1 WHERE id = conn.id;
+    
+    -- Check thresholds and upgrade reveal stage
+    IF conn.reveal_stage = 'shadow' AND (conn.message_count + 1) >= 25 THEN
+        UPDATE connections SET reveal_stage = 'whisper' WHERE id = conn.id;
+    ELSIF conn.reveal_stage = 'whisper' AND (conn.message_count + 1) >= 50 AND days_since_connection >= 3 THEN
+        UPDATE connections SET reveal_stage = 'glimpse' WHERE id = conn.id;
+    ELSIF conn.reveal_stage = 'glimpse' AND (conn.message_count + 1) >= 100 AND days_since_connection >= 7 THEN
+        UPDATE connections SET reveal_stage = 'soul' WHERE id = conn.id;
+    END IF;
+    -- 'unfold' requires mutual manual action, not automatic
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER on_message_insert
+    AFTER INSERT ON messages
+    FOR EACH ROW
+    EXECUTE FUNCTION check_reveal_progression();
+6.3 POV Card Sharing (Deep Link + Image Generation)
+When a user shares a POV card externally:
+
+Next.js API Route renders the card as a server-side generated OG image (using @vercel/og or satori)
+Deep link format: unfoldyou.app/pov/{card_id}
+OG meta tags on the shared page show the card content as a preview image
+If the viewer has the app → deep link opens card in-app
+If not → renders a beautiful landing page with "Get UnfoldYou" CTA
+7. Additional Polish & Improvements Identified
+7.1 Features Your Concept Was Missing
+Addition	Rationale
+Notification system	Push notifications for new connections, messages, POV likes, reveal milestones
+User blocking	Must be able to block users from both anonymous and real profiles
+Report system	Basic user-driven reporting for POV cards, messages, and profiles (AI moderation deferred)
+Account deletion	GDPR-compliant full data wipe, including cascading deletes
+Spam prevention	Rate limits on messages (100/hr), POV cards (5/day), connect requests (20/day)
+Connection limits	Max 50 active stranger connections to prevent collect-and-ghost behavior
+Reveal stage notifications	Celebration moments when a new stage is unlocked — makes progression feel rewarding
+Read receipts in anonymous mode	Delayed receipts (shown after 5 min) to reduce pressure
+Profile completeness score	Encourage filling out all fields by showing a % bar during onboarding
+"Sound of the Week" reminder	Weekly push notification reminding users to update their sound pick
+7.2 Edge Cases Handled
+Scenario	Resolution
+User A sends connect to User B, User B sends connect to User A simultaneously	Auto-accept. Deduplicate by checking existing pending requests before creating new one
+User deletes account while in active chats	Cascade delete. Chat partner sees "This user has left UnfoldYou" system message
+POV Card is reported → what about likes?	Reported card is hidden from feed (soft-delete via is_hidden flag). Likes preserved until moderation decision
+User tries to "Unfold" but partner doesn't	"Unfold" button shows as pending. Partner gets notification. Request expires after 48h
+Known-connection code is brute-forced	3 attempts max + 30-minute expiry. Code is 6-char alphanumeric = 2.1B combinations
+User changes shadow name after connecting	Old shadow name is shown in existing chats (snapshot at connection time). New name visible on new cards
+8. Implementation Roadmap
+Phase 1 — Foundation (Week 1–2) ✅
+ Project setup (Next.js + Supabase + Vercel)
+ Supabase schema creation (all tables, RLS, functions)
+ Auth flow (email + OTP signup/login)
+ Onboarding wizard (real profile → anonymous profile → love soul)
+ Basic UI shell and navigation
+Phase 2 — Core Features (Week 3–4)
+ POV Card system (create, feed, templates, 24h expiry, save)
+ Feed with server-side data fetching
+ Anonymous profile page ("You" tab)
+ Saved POV cards gallery
+ POV Card like/unlike toggle
+ Server Actions for all mutations
+Phase 2.5 — Search & Discovery
+ Database indexes (pg_trgm + GIN for shadow name and interests)
+ Server Actions (searchShadowProfiles, searchConversations)
+ Reusable SearchBar component
+ Connect page (Discover/Known tabs + search + interest filter chips)
+ Other-user shadow profile page (/connect/profile/[id])
+ Chat page search bar
+Phase 3 — Connections & Chat (Week 5–6)
+ Stranger connection flow (request + accept/decline)
+ Known connection flow (code generation + verification)
+ Real-time chat (Supabase Realtime)
+ Progressive reveal system (trigger-based stage transitions)
+ Chat UI (anonymous mode vs. full mode)
+Phase 4 — Polish & Safety (Week 7–8)
+ Notification system
+ POV Card sharing (OG image generation + deep links)
+ Report & block system (user-driven, no AI)
+ Rate limiting and abuse prevention
+ Password/account recovery flows
+Future Phase — AI Moderation
+ AI-based content moderation pipeline (text classification, NSFW image detection)
+ Voice note transcription + keyword scanning
+ Automated flagging and review queue
+Phase 5 — Launch Prep (Week 9–10)
+ Performance optimization
+ Accessibility audit
+ Privacy policy & terms of service
+ App Store / Play Store assets (if PWA/native)
+ Beta testing (invite-only)
+ Analytics integration
+Testing & QA (After each phase — deferred for now)
+ Unit tests for utility/helper functions (Vitest)
+ Integration tests for Supabase RLS policies
+ E2E tests: auth flow, onboarding, POV card lifecycle (Playwright)
+ E2E tests: connection flows (stranger + known)
+ E2E tests: chat + progressive reveal
+ Manual verification checklists per phase
+9. Verification Plan
+Since this phase is concept & planning only (no code yet), verification will happen during implementation:
+
+Automated Tests (planned for implementation)
+Unit tests for psychology scoring functions (Jest)
+Integration tests for RLS policies (Supabase test helpers)
+E2E tests for onboarding flow (Playwright)
+E2E tests for POV Card lifecycle (create → expire → save)
+Manual Verification
+Walk through complete onboarding flow on mobile viewport
+Test progressive reveal by exchanging messages between two test accounts
+Verify POV Card disappears after 24h (use shortened TTL in dev)
+Verify anonymous profile data isolation (attempt to query real profile of a shadow-connected user)
+Test share flow: generate shared card image, verify OG tags render on WhatsApp/Twitter preview
+User Review Required
+IMPORTANT
+
+Before implementation begins, please confirm:
+
+Reveal milestones — Are the thresholds (25/50/100 messages + day counts) too fast or too slow for your vision?
+Psychology questions — Are you happy with the multiple-choice format for Q1–Q3, or do you prefer all open-ended?
+Connection limits — Is 50 max active stranger connections a good cap, or should it be higher/lower?
+POV Card character limit — 500 characters enough? Should it support multimedia (images/sketches)?
+PWA vs Native — Next.js gives us a great PWA. Do you eventually want React Native / Flutter for native mobile?
+Sound of the Week — Should this be a Spotify embed, or a user-uploaded audio clip, or both?
+Monetization — Any thoughts on revenue model? (Premium reveals, extra POV card slots, profile boosts, etc.)

@@ -1,0 +1,177 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal {
+    background: var(--surface);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 8px 8px 0px var(--ink);
+    padding: 32px;
+    width: 90%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slideUp 0.3s ease;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon {
+    font-size: 2.5rem;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.codeInputs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.codeBox {
+    width: 40px;
+    height: 50px;
+    border: 2px solid var(--glass-border);
+    border-radius: 8px;
+    background: var(--canvas);
+    font-size: 1.5rem;
+    text-align: center;
+    font-family: monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--ink);
+    transition: all 0.2s;
+}
+
+.codeBox:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.error {
+    color: #ef4444;
+    font-size: 0.85rem;
+    text-align: center;
+    margin: 0;
+    font-weight: 500;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.cancelBtn {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.connectBtn {
+    flex: 2;
+    padding: 12px;
+    background: var(--gradient-brand);
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--shadow);
+    transition: all 0.2s;
+}
+
+.connectBtn:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+.connectBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.shake {
+    animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
+    }
+}

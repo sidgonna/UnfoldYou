@@ -1,0 +1,138 @@
+.container {
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 4px;
+}
+
+.title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.clearBtn {
+    font-size: 11px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.clearBtn:hover {
+    color: var(--error, #e74c3c);
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    padding-bottom: 0;
+}
+
+.cardWrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 12px 4px;
+    background: var(--surface);
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--canvas);
+    border-radius: 50%;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-subtle);
+}
+
+.name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.removeBtn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    /* Match card background */
+    border: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+    opacity: 0;
+    transform: scale(0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cardWrapper:hover .removeBtn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.removeBtn:hover {
+    background: var(--error, #e74c3c);
+    border-color: var(--error, #e74c3c);
+    color: white;
+}
+
+/* Mobile optimizations */
+@media (max-width: 600px) {
+    .removeBtn {
+        opacity: 1;
+        transform: scale(1);
+        top: -4px;
+        right: -4px;
+        width: 18px;
+        height: 18px;
+        font-size: 14px;
+    }
+}

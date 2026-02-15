@@ -1,0 +1,209 @@
+/* Notification Bell & List Styles (NeoBrutalism) */
+
+.container {
+    position: relative;
+    display: inline-block;
+}
+
+.bellBtn {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    position: relative;
+    padding: 8px;
+    transition: transform 0.2s;
+    color: var(--ink);
+    /* Ensure visible icon */
+}
+
+.bellBtn:active {
+    transform: scale(0.95);
+}
+
+.badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #ef4444;
+    /* Force Red */
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    padding: 0 4px;
+    box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* Dropdown */
+.dropdown {
+    position: absolute;
+    top: 120%;
+    /* More spacing */
+    right: -10px;
+    width: 340px;
+    max-height: 450px;
+    background: #fff;
+    /* Force white */
+    border: 3px solid #000;
+    border-radius: 16px;
+    box-shadow: 8px 8px 0px #000;
+    /* Sharp shadow */
+    z-index: 10000;
+    /* High z-index */
+    overflow: hidden;
+    margin-top: 10px;
+    animation: slideDown 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.listContainer {
+    display: flex;
+    flex-direction: column;
+    max-height: 450px;
+}
+
+.header {
+    padding: 16px;
+    border-bottom: 3px solid #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f3f4f6;
+    /* Slight gray header */
+}
+
+.title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #000;
+}
+
+.markReadBtn {
+    background: transparent;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #6b7280;
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.markReadBtn:hover {
+    color: #000;
+}
+
+.scrollArea {
+    overflow-y: auto;
+    flex: 1;
+    background: #fff;
+}
+
+.loading,
+.empty {
+    padding: 32px;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    color: #6b7280;
+}
+
+.emptyIcon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+/* Items */
+.item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.item:hover {
+    background: #f9fafb;
+    transform: translateX(2px);
+}
+
+.item.unread {
+    background: #ecfdf5;
+    /* Light green/mint for unread to stand out */
+    border-left: 4px solid #10b981;
+    /* Green accent */
+}
+
+.avatar {
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #000;
+    border-radius: 50%;
+    background: #fff;
+    margin-right: 14px;
+    flex-shrink: 0;
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+    flex: 1;
+    min-width: 0;
+}
+
+.text {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #1f2937;
+    margin: 0 0 6px 0;
+    line-height: 1.4;
+}
+
+.name {
+    font-weight: 700;
+    color: #000;
+}
+
+.time {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    /* Green dot */
+    margin-left: 8px;
+    border: 1px solid #047857;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

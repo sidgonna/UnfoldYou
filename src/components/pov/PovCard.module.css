@@ -1,0 +1,161 @@
+.pov-card {
+    border-radius: 20px;
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    min-height: 200px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+}
+
+.pov-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Header */
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-author {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.author-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.author-link:hover {
+    opacity: 0.8;
+}
+
+.card-avatar {
+    font-size: 1.5rem;
+}
+
+.card-name {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.card-timer {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+.saved-badge {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+}
+
+/* Content */
+
+.card-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.card-content p {
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    font-family: var(--font-heading);
+    word-break: break-word;
+}
+
+/* Footer */
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.action-btn.liked {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.saved {
+    background: rgba(168, 85, 247, 0.2);
+    color: var(--brand-primary);
+}
+
+.action-btn.danger {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.like-count {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    padding: 6px 12px;
+}
+
+.delete-confirm {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.card-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+
+
+.card-watermark {
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.card-time {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.7rem;
+}
