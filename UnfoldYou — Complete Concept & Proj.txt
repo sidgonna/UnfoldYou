@@ -554,32 +554,32 @@ Phase 1 — Foundation (Week 1–2) ✅
  Auth flow (email + OTP signup/login)
  Onboarding wizard (real profile → anonymous profile → love soul)
  Basic UI shell and navigation
-Phase 2 — Core Features (Week 3–4)
- POV Card system (create, feed, templates, 24h expiry, save)
- Feed with server-side data fetching
- Anonymous profile page ("You" tab)
- Saved POV cards gallery
- POV Card like/unlike toggle
- Server Actions for all mutations
-Phase 2.5 — Search & Discovery
- Database indexes (pg_trgm + GIN for shadow name and interests)
- Server Actions (searchShadowProfiles, searchConversations)
- Reusable SearchBar component
- Connect page (Discover/Known tabs + search + interest filter chips)
- Other-user shadow profile page (/connect/profile/[id])
- Chat page search bar
-Phase 3 — Connections & Chat (Week 5–6)
- Stranger connection flow (request + accept/decline)
- Known connection flow (code generation + verification)
- Real-time chat (Supabase Realtime)
- Progressive reveal system (trigger-based stage transitions)
- Chat UI (anonymous mode vs. full mode)
-Phase 4 — Polish & Safety (Week 7–8)
- Notification system
- POV Card sharing (OG image generation + deep links)
- Report & block system (user-driven, no AI)
- Rate limiting and abuse prevention
- Password/account recovery flows
+Phase 2 — Core Features (Week 3–4) ✅
+  POV Card system (create, feed, templates, 24h expiry, save)
+  Feed with server-side data fetching
+  Anonymous profile page ("You" tab)
+  Saved POV cards gallery
+  POV Card like/unlike toggle ✅ (Optimistic + Realtime)
+  Server Actions for all mutations
+Phase 2.5 — Search & Discovery ✅
+  Database indexes (pg_trgm + GIN for shadow name and interests)
+  Server Actions (searchShadowProfiles, searchConversations)
+  Reusable SearchBar component
+  Connect page (Discover/Known tabs + search + interest filter chips)
+  Other-user shadow profile page (/connect/profile/[id])
+  Chat page search bar
+Phase 3 — Connections & Chat (Week 5–6) ✅
+  Stranger connection flow (request + accept/decline)
+  Known connection flow (code generation + verification)
+  Real-time chat (Supabase Realtime)
+  Progressive reveal system (trigger-based stage transitions)
+  Chat UI (anonymous mode vs. full mode)
+Phase 4 — Polish & Safety (Week 7–8) ✅
+  Notification system ✅ (State-First Sync + In-Chat Suppression)
+  POV Card sharing (OG image generation + deep links)
+  Report & block system (user-driven, no AI) ✅ (Basic reporting implemented)
+  Rate limiting and abuse prevention
+  Password/account recovery flows
 Future Phase — AI Moderation
  AI-based content moderation pipeline (text classification, NSFW image detection)
  Voice note transcription + keyword scanning

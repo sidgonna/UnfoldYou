@@ -58,7 +58,8 @@ export default function PovCardComponent({ card, onUpdate }: PovCardProps) {
             setLocalLikes(card.likes_count)
         }
         setLikeLoading(false)
-        onUpdate?.()
+        setLikeLoading(false)
+        // onUpdate?.() - Removing to prevent full list refresh. We use optimistic updates + realtime now.
     }
 
     const handleSave = async () => {

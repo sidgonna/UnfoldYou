@@ -225,6 +225,16 @@ export async function markMessagesRead(connectionId: string) {
         return { error: 'Failed to mark messages as read' }
     }
 
+    // ALSO mark notifications as read for this connection
+    // This ensures the bell icon clears when the user opens the chat
+    await supabase
+        .from('notifications')
+        .update({ is_read: true, read_at: new Date().toISOString() })
+        .eq('recipient_id', user.id)
+        .eq('resource_id', connectionId)
+        .eq('type', 'new_message')
+        .eq('is_read', false)
+
     return { data: { count: data ?? 0 } }
 }
 

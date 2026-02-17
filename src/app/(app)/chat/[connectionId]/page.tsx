@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { fetchChatData, sendMessage, fetchMessages, markMessagesRead, type Message, type ChatData } from '@/lib/actions/messages'
-import { requestUnfold, fetchRevealedData } from '@/lib/actions/unfold'
+import { requestUnfold, fetchRevealedData, submitStageConsent, fetchConsentStatus } from '@/lib/actions/unfold'
 import { createClient } from '@/lib/supabase/client'
 import RevealProgressBar from '@/components/chat/RevealProgressBar'
 import RevealMilestonePopup from '@/components/chat/RevealMilestonePopup'
@@ -30,10 +30,13 @@ export default function ChatRoomPage() {
     const [showUnfold, setShowUnfold] = useState(false)
     const [reportModalOpen, setReportModalOpen] = useState(false)
     const [prevStage, setPrevStage] = useState<string>('')
+    const [consentStatus, setConsentStatus] = useState<any>(null)
+    const [lastConsentRequest, setLastConsentRequest] = useState<string | null>(null)
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const messagesContainerRef = useRef<HTMLDivElement>(null)
     const lastMessageIdRef = useRef<string | null>(null)
+    const inputRef = useRef<HTMLTextAreaElement | null>(null)
 
     // Typing hook
     const currentUserId = chatData?.currentUserId || ''
@@ -67,6 +70,16 @@ export default function ChatRoomPage() {
             setChatData(result.data)
             setMessages(result.data.messages)
             setPrevStage(result.data.connection.reveal_stage)
+            
+            // Initial consent fetch
+            if (result.data.connection.connection_type === 'stranger') {
+                const consentRes = await fetchConsentStatus(connectionId)
+                if (consentRes.data) {
+                    setConsentStatus(consentRes.data.consent_status)
+                    setLastConsentRequest(consentRes.data.last_consent_request)
+                }
+            }
+            
             setLoading(false)
 
             // Mark as read
@@ -140,6 +153,14 @@ export default function ChatRoomPage() {
                 async (payload) => {
                     const updated = payload.new as ChatData['connection']
                     setChatData(prev => prev ? { ...prev, connection: updated } : prev)
+                    
+                    // Update consent status locally from payload if present
+                    if ((updated as any).consent_status) {
+                        setConsentStatus((updated as any).consent_status)
+                    }
+                    if ((updated as any).last_consent_request) {
+                        setLastConsentRequest((updated as any).last_consent_request)
+                    }
 
                     // Check for reveal stage change using ref
                     if (updated.reveal_stage !== prevStageRef.current) {
@@ -169,7 +190,10 @@ export default function ChatRoomPage() {
                 return [...prev, result.data!]
             })
             setInput('')
-            // useEffect will scroll
+            // Restore focus to input to keep keyboard up
+            requestAnimationFrame(() => {
+                inputRef.current?.focus()
+            })
         }
         setSending(false)
     }
@@ -209,6 +233,16 @@ export default function ChatRoomPage() {
             }
         }
         setShowUnfold(false)
+    }
+
+    // Handle Stage Unlock Request
+    async function handleUnlockRequest(stage: string) {
+        // Optimistic update? Maybe complex with 2 users. 
+        // Let's just call server and let realtime update update UI
+        const result = await submitStageConsent(connectionId, stage, 'accept')
+        if (result.error) {
+            alert(result.error) // Simple alert for now, toast better later
+        }
     }
 
     if (loading || !chatData) {
@@ -276,6 +310,10 @@ export default function ChatRoomPage() {
                 <RevealProgressBar
                     currentStage={connection.reveal_stage}
                     messageCount={connection.message_count}
+                    onUnlockRequest={handleUnlockRequest}
+                    consentStatus={consentStatus}
+                    currentUserId={currentUserId}
+                    lastConsentRequest={lastConsentRequest}
                 />
             )}
 
@@ -323,6 +361,13 @@ export default function ChatRoomPage() {
             {/* Input */}
             <div className={styles.inputBar}>
                 <textarea
+                    ref={(el) => {
+                        // Focus on mount for desktop, but maybe not mobile to avoid jumpiness
+                        // But for now, just keep the ref
+                        if (el && !inputRef.current) {
+                            inputRef.current = el
+                        }
+                    }}
                     className={styles.textarea}
                     value={input}
                     onChange={(e) => {
@@ -332,10 +377,13 @@ export default function ChatRoomPage() {
                     onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
                     rows={1}
-                    disabled={sending}
+                    // Don't disable input to keep focus/keyboard up
+                    // disabled={sending} 
+                    autoFocus
                 />
                 <button
                     className={styles.sendBtn}
+                    onMouseDown={(e) => e.preventDefault()} // Prevent button from stealing focus
                     onClick={handleSend}
                     disabled={!input.trim() || sending}
                 >

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { fetchFeedCards, type PovCard } from '@/lib/actions/pov-cards'
+import { createClient } from '@/lib/supabase/client'
 import PovCardComponent from '@/components/pov/PovCard'
 import styles from './feed.module.css'
 
@@ -59,6 +60,42 @@ export default function FeedPage() {
 
         return () => clearInterval(interval)
     }, [cards, loading])
+
+    // Realtime Likes Subscription
+    useEffect(() => {
+        const supabase = createClient()
+        const channel = supabase
+            .channel('feed-updates')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'pov_cards',
+                },
+                (payload) => {
+                    const updated = payload.new as PovCard
+                    setCards((current) => 
+                        current.map((card) => {
+                            if (card.id === updated.id) {
+                                // Update dynamic counts, keep user-specific state (liked/saved/profile)
+                                return {
+                                    ...card,
+                                    likes_count: updated.likes_count,
+                                    // potentially comment_count later
+                                }
+                            }
+                            return card
+                        })
+                    )
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [])
 
     const handleShowNewPosts = () => {
         if (newCards.length === 0) return

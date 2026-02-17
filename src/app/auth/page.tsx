@@ -74,11 +74,29 @@ export default function AuthPage() {
 
             setStep('success')
 
-            // Check if user has completed onboarding
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('onboarding_complete')
-                .single()
+            // Ensure session is fully established
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+            if (sessionError || !session) throw new Error('Session not established. Please try again.')
+
+            // Helper to fetch profile with retry
+            const fetchProfile = async (retries = 3, delay = 500) => {
+                for (let i = 0; i < retries; i++) {
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('onboarding_complete')
+                        .eq('id', session.user.id)
+                        .single()
+                    
+                    if (!error) return data
+                    if (error.code !== 'PGRST116') {
+                        console.error('Profile fetch error:', error)
+                    }
+                    if (i < retries - 1) await new Promise(r => setTimeout(r, delay))
+                }
+                return null
+            }
+
+            const profile = await fetchProfile()
 
             setTimeout(() => {
                 if (profile?.onboarding_complete) {
@@ -86,8 +104,9 @@ export default function AuthPage() {
                 } else {
                     router.push('/onboarding')
                 }
-            }, 1500)
+            }, 1000)
         } catch (err: any) {
+            console.error('Verify error:', err)
             setError(err.message || 'Invalid code. Please try again.')
         } finally {
             setLoading(false)

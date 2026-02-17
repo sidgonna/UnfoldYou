@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createNotification } from '@/lib/actions/notifications'
+import { revalidatePath } from 'next/cache'
 
 // ==================== TYPES ====================
 
@@ -11,6 +12,102 @@ export interface RevealedData {
 }
 
 // ==================== REQUEST UNFOLD ====================
+
+// ==================== CONSENT LOGIC ====================
+
+export async function submitStageConsent(connectionId: string, stage: string, action: 'accept' | 'decline') {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Not authenticated' }
+
+    // Fetch current state
+    const { data: conn } = await supabase
+        .from('connections')
+        .select('*')
+        .eq('id', connectionId)
+        .single()
+
+    if (!conn) return { error: 'Connection not found' }
+
+    // Cooldown check (2 minutes)
+    const now = new Date()
+    const lastRequest = conn.last_consent_request ? new Date(conn.last_consent_request) : null
+    
+    // Only enforce cooldown if previously REJECTED
+    // If it's a fresh request or accepting a pending one, ignore cooldown
+    const currentStatus = conn.consent_status || {}
+    const myStatus = currentStatus.requests?.[user.id]
+
+    if (action === 'accept' && myStatus === 'declined' && lastRequest) {
+        const diffMs = now.getTime() - lastRequest.getTime()
+        if (diffMs < 2 * 60 * 1000) {
+             const remaining = Math.ceil((120000 - diffMs) / 1000)
+             return { error: `Please wait ${remaining}s before requesting again.` }
+        }
+    }
+
+    // Update status
+    let newStatus = { ...currentStatus }
+    
+    // If target stage changed (new level), reset requests
+    if (newStatus.target_stage !== stage) {
+        newStatus = {
+            target_stage: stage,
+            requests: {}
+        }
+    }
+
+    // Set my status
+    newStatus.requests = {
+        ...newStatus.requests,
+        [user.id]: action
+    }
+
+    const updates: any = {
+        consent_status: newStatus,
+        updated_at: now.toISOString()
+    }
+
+    if (action === 'accept') {
+        // Check if BOTH accepted
+        const otherUserId = conn.requester_id === user.id ? conn.recipient_id : conn.requester_id
+        const otherStatus = newStatus.requests[otherUserId]
+
+        if (otherStatus === 'accept') {
+            // UNLOCK!
+            updates.reveal_stage = stage
+            // Clear consent for next level? Or keep as record?
+            // Let's keep it, next level will overwrite target_stage
+        }
+    } else {
+        // Decline -> Set timestamp for cooldown
+        updates.last_consent_request = now.toISOString()
+    }
+
+    const { error } = await supabase
+        .from('connections')
+        .update(updates)
+        .eq('id', connectionId)
+
+    if (error) {
+        console.error('Consent error:', error)
+        return { error: 'Failed to update consent' }
+    }
+
+    revalidatePath('/chat/[connectionId]', 'page')
+    return { success: true, status: action }
+}
+
+export async function fetchConsentStatus(connectionId: string) {
+    const supabase = await createClient()
+    const { data } = await supabase
+        .from('connections')
+        .select('consent_status, last_consent_request, reveal_stage')
+        .eq('id', connectionId)
+        .single()
+    
+    return { data }
+}
 
 export async function requestUnfold(connectionId: string) {
     const supabase = await createClient()
