@@ -122,7 +122,7 @@ export async function fetchFeedCards(page: number = 0, pageSize: number = 20) {
             expires_at,
             created_at
         `)
-        .or(`is_saved.eq.true,expires_at.gt.${new Date().toISOString()}`)
+        .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .range(from, to)
 

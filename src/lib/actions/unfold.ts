@@ -29,6 +29,58 @@ export async function submitStageConsent(connectionId: string, stage: string, ac
 
     if (!conn) return { error: 'Connection not found' }
 
+    // Confirm user is participant
+    const isRequester = conn.requester_id === user.id
+    const isRecipient = conn.recipient_id === user.id
+    if (!isRequester && !isRecipient) return { error: 'Not a participant' }
+
+    // --- VALIDATION: Thresholds ---
+    // Determine thresholds (Test vs Normal)
+    // Note: Ideally connection would store 'is_test' flag, but checking email again is safe
+    let isTestMode = false
+    const { data: userData } = await supabase.auth.admin.getUserById(user.id) // safer to query admin if possible, but here 'user' is from session
+    const email = user.email || ''
+    if (email.startsWith('test') || email.endsWith('@example.com') || email.endsWith('@yopmail.com')) isTestMode = true
+    
+    // Limits
+    const thresholds = isTestMode 
+        ? { shadow: 0, whisper: 10, glimpse: 15, soul: 20 }
+        : { shadow: 0, whisper: 25, glimpse: 50, soul: 100 }
+
+    const nextStage = stage
+    // Determine required count for the *requested* stage
+    const requiredCount = (thresholds as any)[nextStage] || 9999
+    
+    if (conn.message_count < requiredCount) {
+        return { error: `Not enough messages! You need ${requiredCount} to unlock ${stage}.` }
+    }
+
+    // --- VALIDATION: Mutual Participation ---
+    // Count messages from EACH user
+    if (action === 'accept') {
+        const { count: myCount } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('connection_id', connectionId)
+            .eq('sender_id', user.id)
+            
+        const otherUserId = isRequester ? conn.recipient_id : conn.requester_id
+        const { count: theirCount } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('connection_id', connectionId)
+            .eq('sender_id', otherUserId)
+
+        // Rule: Each must send at least 1 message (or ~10% balance?)
+        // Let's go with strict mutual engagement: > 0 for everyone
+        if ((myCount || 0) < 1) {
+            return { error: "You haven't sent any messages yet! Chat to unfold." }
+        }
+        if ((theirCount || 0) < 1) {
+             return { error: "The other person hasn't spoken yet. Wait for a reply!" }
+        }
+    }
+
     // Cooldown check (2 minutes)
     const now = new Date()
     const lastRequest = conn.last_consent_request ? new Date(conn.last_consent_request) : null
@@ -50,6 +102,7 @@ export async function submitStageConsent(connectionId: string, stage: string, ac
     let newStatus = { ...currentStatus }
     
     // If target stage changed (new level), reset requests
+    // But verify we aren't skipping levels? (UI handles this, but good to know)
     if (newStatus.target_stage !== stage) {
         newStatus = {
             target_stage: stage,
@@ -71,13 +124,19 @@ export async function submitStageConsent(connectionId: string, stage: string, ac
     if (action === 'accept') {
         // Check if BOTH accepted
         const otherUserId = conn.requester_id === user.id ? conn.recipient_id : conn.requester_id
-        const otherStatus = newStatus.requests[otherUserId]
+        const otherStatus = newStatus.requests?.[otherUserId]
 
         if (otherStatus === 'accept') {
             // UNLOCK!
             updates.reveal_stage = stage
-            // Clear consent for next level? Or keep as record?
-            // Let's keep it, next level will overwrite target_stage
+            
+            // Notify other user of unlock
+             createNotification(
+                otherUserId, 
+                'reveal_milestone', 
+                connectionId, 
+                { stage }
+            ).catch(console.error)
         }
     } else {
         // Decline -> Set timestamp for cooldown
@@ -288,7 +347,7 @@ export async function fetchRevealedData(connectionId: string, stage: string) {
         case 'unfold': {
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('full_name, profile_photo_url, age, height, location')
+                .select('name, profile_picture_url, dob, height_cm, location_city, location_country')
                 .eq('id', otherUserId)
                 .single()
 
@@ -296,11 +355,11 @@ export async function fetchRevealedData(connectionId: string, stage: string) {
                 data: {
                     stage: 'unfold',
                     data: {
-                        full_name: profile?.full_name ?? null,
-                        profile_photo_url: profile?.profile_photo_url ?? null,
-                        age: profile?.age ?? null,
-                        height: profile?.height ?? null,
-                        location: profile?.location ?? null,
+                        full_name: profile?.name ?? null,
+                        profile_photo_url: profile?.profile_picture_url ?? null,
+                        dob: profile?.dob ?? null,
+                        height: profile?.height_cm ?? null,
+                        location: profile ? `${profile.location_city}, ${profile.location_country}` : null,
                     },
                 },
             }

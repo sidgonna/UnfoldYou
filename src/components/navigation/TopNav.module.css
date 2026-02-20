@@ -1,29 +1,38 @@
 .header {
-    height: 60px;
+    height: var(--header-height);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
-    background: var(--surface);
-    border-bottom: 2px solid var(--ink);
+    padding: 0 20px;
+    background: #0a0a0f; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     position: sticky;
     top: 0;
-    z-index: 900;
-    /* Below dropdowns (1000) */
+    z-index: 1000;
 }
 
 .logo {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-weight: 800;
     font-size: 20px;
-    color: var(--ink);
+    color: #fff;
     text-transform: uppercase;
-    letter-spacing: -0.5px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
 }
 
 .logo a {
     text-decoration: none;
     color: inherit;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.logo a:hover {
+    transform: scale(1.02);
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    color: var(--accent-primary-light);
 }
 
 .actions {

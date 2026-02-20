@@ -11,12 +11,16 @@ export default function AuthPage() {
     const [step, setStep] = useState<AuthStep>('email')
     const [email, setEmail] = useState('')
     const [otp, setOtp] = useState(['', '', '', '', '', ''])
+    const [password, setPassword] = useState('')
+    const [useTestMode, setTestMode] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [countdown, setCountdown] = useState(0)
     const otpRefs = useRef<(HTMLInputElement | null)[]>([])
     const router = useRouter()
     const supabase = createClient()
+
+    const isDevLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_DEV_LOGIN === 'true'
 
     useEffect(() => {
         if (countdown > 0) {
@@ -48,6 +52,46 @@ export default function AuthPage() {
             setCountdown(60)
         } catch (err: any) {
             setError(err.message || 'Failed to send OTP. Please try again.')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const signInWithPassword = async () => {
+        if (!isDevLoginEnabled) {
+            setError('Developer login is disabled in this environment.')
+            return
+        }
+        if (!email || !password) {
+            setError('Please enter email and password')
+            return
+        }
+        setLoading(true)
+        setError('')
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            })
+            if (error) throw error
+            
+             // Ensure session is fully established (same as verifyOtp)
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+            if (sessionError || !session) throw new Error('Session not established.')
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('onboarding_complete')
+                .eq('id', session.user.id)
+                .single()
+
+            if (profile?.onboarding_complete) {
+                router.push('/feed')
+            } else {
+                router.push('/onboarding')
+            }
+        } catch (err: any) {
+             setError(err.message)
         } finally {
             setLoading(false)
         }
@@ -168,7 +212,9 @@ export default function AuthPage() {
                             <div>
                                 <h2 className={styles['auth-title']}>Welcome</h2>
                                 <p className={styles['auth-subtitle']}>
-                                    Enter your email to get started. No passwords needed.
+                                    {useTestMode 
+                                        ? 'Test Mode: Login with password' 
+                                        : 'Enter your email to get started. No passwords needed.'}
                                 </p>
                             </div>
 
@@ -186,24 +232,55 @@ export default function AuthPage() {
                                         setEmail(e.target.value)
                                         setError('')
                                     }}
-                                    onKeyDown={(e) => e.key === 'Enter' && sendOtp()}
+                                    onKeyDown={(e) => e.key === 'Enter' && (useTestMode ? signInWithPassword() : sendOtp())}
                                     autoFocus
                                     autoComplete="email"
                                 />
-                                {error && <span className="error-text">{error}</span>}
                             </div>
+
+                            {useTestMode && (
+                                <div className="input-group">
+                                    <label className="input-label" htmlFor="password">
+                                        Test Password
+                                    </label>
+                                    <input
+                                        id="password"
+                                        type="password"
+                                        className={`input ${error ? 'input-error' : ''}`}
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && signInWithPassword()}
+                                    />
+                                </div>
+                            )}
+
+                            {error && <span className="error-text">{error}</span>}
 
                             <button
                                 className="btn btn-primary btn-full"
-                                onClick={sendOtp}
-                                disabled={loading || !email}
+                                onClick={useTestMode ? signInWithPassword : sendOtp}
+                                disabled={loading || !email || (useTestMode && !password)}
                             >
                                 {loading ? (
                                     <span className="spinner" />
                                 ) : (
-                                    'Continue with Email'
+                                    useTestMode ? 'Sign In (Test)' : 'Continue with Email'
                                 )}
                             </button>
+
+                            {isDevLoginEnabled && (
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={() => {
+                                        setTestMode(!useTestMode)
+                                        setError('')
+                                    }}
+                                    style={{ marginTop: '1rem', fontSize: '0.8rem', opacity: 0.7 }}
+                                >
+                                    {useTestMode ? '← Back to Magic Link' : 'Developer Login'}
+                                </button>
+                            )}
                         </div>
                     )}
 

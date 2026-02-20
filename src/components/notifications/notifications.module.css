@@ -13,8 +13,7 @@
     position: relative;
     padding: 8px;
     transition: transform 0.2s;
-    color: var(--ink);
-    /* Ensure visible icon */
+    color: var(--text-primary);
 }
 
 .bellBtn:active {
@@ -23,44 +22,38 @@
 
 .badge {
     position: absolute;
-    top: 0;
-    right: 0;
-    background: #ef4444;
-    /* Force Red */
+    top: 4px;
+    right: 4px;
+    background: var(--accent-danger);
     color: white;
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
+    font-family: var(--font-body);
+    font-size: 10px;
     font-weight: 700;
-    height: 18px;
-    min-width: 18px;
-    border-radius: 9px;
+    height: 16px;
+    min-width: 16px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #fff;
+    border: 1px solid var(--bg-primary);
     padding: 0 4px;
-    box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
 }
 
 /* Dropdown */
 .dropdown {
     position: absolute;
-    top: 120%;
-    /* More spacing */
+    top: 100%;
     right: -10px;
-    width: 340px;
-    max-height: 450px;
-    background: #fff;
-    /* Force white */
-    border: 3px solid #000;
+    width: 320px;
+    max-height: 480px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
     border-radius: 16px;
-    box-shadow: 8px 8px 0px #000;
-    /* Sharp shadow */
-    z-index: 10000;
-    /* High z-index */
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
     overflow: hidden;
-    margin-top: 10px;
-    animation: slideDown 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-top: 8px;
+    animation: slideDown 0.2s ease-out;
 }
 
 .listContainer {
@@ -71,19 +64,18 @@
 
 .header {
     padding: 16px;
-    border-bottom: 3px solid #000;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #f3f4f6;
-    /* Slight gray header */
+    background: var(--bg-elevated);
 }
 
 .title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-display);
     font-weight: 700;
-    font-size: 18px;
-    color: #000;
+    font-size: 16px;
+    color: var(--text-primary);
 }
 
 .markReadBtn {
@@ -104,7 +96,7 @@
 .scrollArea {
     overflow-y: auto;
     flex: 1;
-    background: #fff;
+    background: var(--bg-card);
 }
 
 .loading,
@@ -125,10 +117,10 @@
     display: flex;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-subtle);
     cursor: pointer;
     transition: all 0.2s;
-    background: #fff;
+    background: var(--bg-card);
 }
 
 .item:last-child {
@@ -141,25 +133,22 @@
 }
 
 .item.unread {
-    background: #ecfdf5;
-    /* Light green/mint for unread to stand out */
-    border-left: 4px solid #10b981;
-    /* Green accent */
+    background: rgba(139, 92, 246, 0.05);
+    border-left: 2px solid var(--accent-primary);
 }
 
 .avatar {
-    font-size: 24px;
-    width: 44px;
-    height: 44px;
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #000;
+    border: 1px solid var(--border-default);
     border-radius: 50%;
-    background: #fff;
+    background: var(--bg-elevated);
     margin-right: 14px;
     flex-shrink: 0;
-    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
 .content {
@@ -168,16 +157,16 @@
 }
 
 .text {
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: #1f2937;
-    margin: 0 0 6px 0;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
     line-height: 1.4;
 }
 
 .name {
     font-weight: 700;
-    color: #000;
+    color: var(--accent-primary-light);
 }
 
 .time {

@@ -34,6 +34,7 @@ export interface ChatData {
         unfold_requester: boolean
         unfold_recipient: boolean
         connected_at: string | null
+        request_message?: string | null
     }
     otherUser: {
         id: string
@@ -45,17 +46,24 @@ export interface ChatData {
         social_energy?: string | null
         bio?: string | null
         interests?: string[]
+        location?: string | null
+        age?: number
+        height?: number
+        voice_note_url?: string | null
+        intent?: string | null
+        habits?: string[] | null
         love_soul?: {
-            q1_answer: string | null
-            q2_answer: string | null
-            q3_answer: string | null
-            q4_answer: string | null
-            attachment_style: string | null
-            love_language: string | null
+            q1_answer?: string | null
+            q2_answer?: string | null
+            q3_answer?: string | null
+            q4_answer?: string | null
+            attachment_style?: string | null
+            love_language?: string | null
         } | null
     }
     messages: Message[]
     currentUserId: string
+    isTestConnection?: boolean
 }
 
 // ==================== SEND MESSAGE ====================
@@ -249,12 +257,14 @@ export async function fetchChatData(connectionId: string): Promise<{ error?: str
     // Fetch connection
     const { data: connection, error: connError } = await supabase
         .from('connections')
-        .select('id, requester_id, recipient_id, connection_type, status, reveal_stage, message_count, unfold_requester, unfold_recipient, connected_at')
+        .select('id, requester_id, recipient_id, connection_type, status, reveal_stage, message_count, unfold_requester, unfold_recipient, connected_at, request_message')
         .eq('id', connectionId)
         .single()
 
     if (connError || !connection) return { error: 'Connection not found' }
-    if (connection.status !== 'accepted') return { error: 'Connection not accepted' }
+    if (connection.status !== 'accepted' && connection.status !== 'pending') {
+        return { error: 'Connection not active' }
+    }
     if (connection.requester_id !== user.id && connection.recipient_id !== user.id) {
         return { error: 'Not a participant' }
     }
@@ -283,23 +293,55 @@ export async function fetchChatData(connectionId: string): Promise<{ error?: str
         interests: shadowProfile.interests,
     }
 
-    // Conditionally fetch real profile (known connection or unfolded)
+    // Conditionally fetch real profile data
     const isFullAccess = connection.connection_type === 'known' || connection.reveal_stage === 'unfold'
+    const stage = connection.reveal_stage
+
+    // Select fields based on access level
+    let profileFields = ''
     if (isFullAccess) {
+        profileFields = 'name, profile_picture_url, voice_note_url, intent, habits, location_city, height_cm, dob, gender'
+    } else {
+        // Progressive Reveal for Strangers
+        // "Real profile is shown but valid/blurred" -> we might need structure, but returning nulls is safer for now.
+        // We only fetch what is allowed.
+        const fields = []
+        if (['whisper', 'glimpse', 'soul', 'unfold'].includes(stage)) {
+            fields.push('voice_note_url')
+        }
+        if (['glimpse', 'soul', 'unfold'].includes(stage)) {
+            fields.push('intent', 'habits')
+        }
+        if (fields.length > 0) {
+            profileFields = fields.join(', ')
+        }
+    }
+
+    if (profileFields) {
         const { data: realProfile } = await supabase
             .from('profiles')
-            .select('full_name, profile_photo_url')
+            .select(profileFields)
             .eq('id', otherUserId)
             .single()
 
         if (realProfile) {
-            otherUser.real_name = realProfile.full_name
-            otherUser.profile_photo = realProfile.profile_photo_url
+            const profile = realProfile as any
+            if (isFullAccess) {
+                otherUser.real_name = profile.name
+                otherUser.profile_photo = profile.profile_picture_url
+                otherUser.location = profile.location_city
+                otherUser.age = profile.dob ? new Date().getFullYear() - new Date(profile.dob).getFullYear() : undefined
+                otherUser.height = profile.height_cm
+            }
+            // Progressive fields
+            if (profile.voice_note_url) otherUser.voice_note_url = profile.voice_note_url
+            if (profile.intent) otherUser.intent = profile.intent
+            if (profile.habits) otherUser.habits = profile.habits
         }
     }
 
     // Conditionally fetch love_soul (soul or unfold stage)
-    if (connection.reveal_stage === 'soul' || connection.reveal_stage === 'unfold') {
+    if (stage === 'soul' || stage === 'unfold') {
         const { data: loveSoul } = await supabase
             .from('love_soul')
             .select('q1_answer, q2_answer, q3_answer, q4_answer, attachment_style, love_language')
@@ -348,6 +390,13 @@ export async function fetchChatData(connectionId: string): Promise<{ error?: str
         .order('created_at', { ascending: false })
         .limit(50)
 
+    // Check if test connection
+    const email = user.email || ''
+    const isTestConnection = 
+        email.startsWith('test') || 
+        email.endsWith('@example.com') || 
+        email.endsWith('@yopmail.com')
+
     return {
         data: {
             connection: {
@@ -361,10 +410,12 @@ export async function fetchChatData(connectionId: string): Promise<{ error?: str
                 unfold_requester: connection.unfold_requester,
                 unfold_recipient: connection.unfold_recipient,
                 connected_at: connection.connected_at,
+                request_message: connection.request_message,
             },
             otherUser,
             messages: ((messages || []).reverse()) as Message[],
             currentUserId: user.id,
+            isTestConnection
         },
     }
 }

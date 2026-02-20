@@ -6,6 +6,7 @@ import { searchShadowProfiles, type ShadowProfileResult } from '@/lib/actions/se
 import { fetchPendingIncomingCount } from '@/lib/actions/connections'
 import { createClient } from '@/lib/supabase/client'
 import SearchBar from '@/components/ui/SearchBar'
+import NotificationBell from '@/components/notifications/NotificationBell'
 import styles from './connect.module.css'
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
 import RecentlyViewed from '@/components/connect/RecentlyViewed'
@@ -85,7 +86,7 @@ export default function ConnectPage() {
                 {/* Header */}
                 <div className={styles['connect-header']}>
                     <h1>Connect</h1>
-                    <Link href="/connect/requests" className={styles['request-badge-link']}>
+                    <Link href="/requests?from=connect" className={styles['request-badge-link']}>
                         <span className={styles['request-badge-icon']}>📬</span>
                         {requestCount > 0 && (
                             <span className={styles['request-badge-count']}>{requestCount}</span>

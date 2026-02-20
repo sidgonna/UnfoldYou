@@ -165,8 +165,8 @@ CREATE POLICY "Users can unlike cards"
 
 CREATE TABLE connections (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    requester_id UUID NOT NULL REFERENCES auth.users(id),
-    recipient_id UUID NOT NULL REFERENCES auth.users(id),
+    requester_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    recipient_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     connection_type TEXT NOT NULL CHECK (connection_type IN ('stranger', 'known')),
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'expired')),
     request_message TEXT,
@@ -177,6 +177,8 @@ CREATE TABLE connections (
     message_count INTEGER DEFAULT 0,
     unfold_requester BOOLEAN DEFAULT FALSE,
     unfold_recipient BOOLEAN DEFAULT FALSE,
+    consent_status JSONB DEFAULT '{}',
+    last_consent_request TIMESTAMPTZ,
     connected_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -202,7 +204,7 @@ CREATE POLICY "Users can update own connections"
 CREATE TABLE messages (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     connection_id UUID NOT NULL REFERENCES connections(id) ON DELETE CASCADE,
-    sender_id UUID NOT NULL REFERENCES auth.users(id),
+    sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     message_type TEXT DEFAULT 'text' CHECK (message_type IN ('text', 'emoji', 'voice', 'image', 'system')),
     media_url TEXT,
@@ -239,8 +241,8 @@ CREATE POLICY "Users can send messages in their connections"
 
 CREATE TABLE reports (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    reporter_id UUID NOT NULL REFERENCES auth.users(id),
-    reported_user_id UUID REFERENCES auth.users(id),
+    reporter_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    reported_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     reported_card_id UUID REFERENCES pov_cards(id),
     reason TEXT NOT NULL,
     details TEXT,
@@ -262,8 +264,8 @@ CREATE POLICY "Users can view own reports"
 
 CREATE TABLE blocked_users (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    blocker_id UUID NOT NULL REFERENCES auth.users(id),
-    blocked_id UUID NOT NULL REFERENCES auth.users(id),
+    blocker_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    blocked_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(blocker_id, blocked_id)
 );
@@ -305,6 +307,20 @@ CREATE POLICY "Known connections can view profiles"
         )
     );
 
+CREATE POLICY "Users can view connected profiles"
+    ON profiles FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM connections
+            WHERE (
+                (connections.requester_id = auth.uid() AND connections.recipient_id = profiles.id)
+                OR 
+                (connections.recipient_id = auth.uid() AND connections.requester_id = profiles.id)
+            )
+            AND connections.status = 'accepted'
+        )
+    );
+
 CREATE POLICY "Soul-stage connections can view love soul"
     ON love_soul FOR SELECT
     USING (
@@ -324,31 +340,16 @@ CREATE POLICY "Soul-stage connections can view love soul"
 -- Progressive reveal trigger
 CREATE OR REPLACE FUNCTION check_reveal_progression()
 RETURNS TRIGGER AS $$
-DECLARE
-    conn RECORD;
-    days_since INTEGER;
 BEGIN
-    SELECT * INTO conn FROM connections WHERE id = NEW.connection_id;
-
-    IF conn.connection_type = 'known' THEN
-        RETURN NEW;
-    END IF;
-
-    days_since := DATE_PART('day', NOW() - conn.connected_at)::INTEGER;
-
     -- Update message count
-    UPDATE connections SET message_count = message_count + 1, updated_at = NOW()
-    WHERE id = conn.id;
+    UPDATE connections 
+    SET message_count = message_count + 1, 
+        updated_at = NOW() 
+    WHERE id = NEW.connection_id;
 
-    -- Check thresholds
-    IF conn.reveal_stage = 'shadow' AND (conn.message_count + 1) >= 25 THEN
-        UPDATE connections SET reveal_stage = 'whisper', updated_at = NOW() WHERE id = conn.id;
-    ELSIF conn.reveal_stage = 'whisper' AND (conn.message_count + 1) >= 50 AND days_since >= 3 THEN
-        UPDATE connections SET reveal_stage = 'glimpse', updated_at = NOW() WHERE id = conn.id;
-    ELSIF conn.reveal_stage = 'glimpse' AND (conn.message_count + 1) >= 100 AND days_since >= 7 THEN
-        UPDATE connections SET reveal_stage = 'soul', updated_at = NOW() WHERE id = conn.id;
-    END IF;
-
+    -- NOTE: Stage progression is now handled via manual "Unlock" request (submitStageConsent)
+    -- This ensures mutual participation and consent before revealing.
+    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -396,12 +397,69 @@ CREATE TRIGGER love_soul_updated_at BEFORE UPDATE ON love_soul
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- ==================== STORAGE ====================
--- Run these in Supabase Dashboard > Storage or via API:
--- 1. Create bucket: "profile-pictures" (public: false)
--- 2. Create bucket: "voice-notes" (public: false)
--- 3. Add storage policies for authenticated users to upload to their own folder
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('voice_notes', 'voice_notes', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Policies for Avatars
+CREATE POLICY "Avatar Public Read"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'avatars' );
+
+CREATE POLICY "Avatar User Upload"
+ON storage.objects FOR INSERT
+WITH CHECK ( bucket_id = 'avatars' AND auth.uid() = owner );
+
+CREATE POLICY "Avatar User Update"
+ON storage.objects FOR UPDATE
+USING ( bucket_id = 'avatars' AND auth.uid() = owner );
+
+-- Policies for Voice Notes
+CREATE POLICY "Voice Note Public Read"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'voice_notes' );
+
+CREATE POLICY "Voice Note User Upload"
+ON storage.objects FOR INSERT
+WITH CHECK ( bucket_id = 'voice_notes' AND auth.uid() = owner );
 
 -- ==================== REALTIME ====================
 -- Enable realtime on messages table for chat
 ALTER PUBLICATION supabase_realtime ADD TABLE messages;
 ALTER PUBLICATION supabase_realtime ADD TABLE connections;
+
+-- ==================== NOTIFICATIONS ====================
+
+CREATE TABLE notifications (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    recipient_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    actor_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    type TEXT NOT NULL CHECK (type IN ('connection_request', 'connection_accepted', 'new_message', 'pov_like', 'reveal_milestone')),
+    resource_id UUID,
+    metadata JSONB DEFAULT '{}',
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own notifications"
+    ON notifications FOR SELECT
+    USING (auth.uid() = recipient_id);
+
+CREATE POLICY "Users can insert notifications"
+    ON notifications FOR INSERT
+    WITH CHECK (auth.uid() = actor_id);
+
+CREATE POLICY "Users can update own notifications"
+    ON notifications FOR UPDATE
+    USING (auth.uid() = recipient_id);
+
+ALTER PUBLICATION supabase_realtime ADD TABLE pov_cards;
+ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+

@@ -4,18 +4,6 @@ A social discovery platform where strangers unfold into real connections — ano
 1. Executive Summary
 UnfoldYou is a hybrid social/dating app that sits at the intersection of three powerful market trends:
 
-Trend	Market Size (2025)	CAGR
-Anonymous social apps	~$5B	15%
-Ephemeral content (Stories)	Dominant format across all platforms	—
-Psychology-based dating	Growing segment led by REDDI, SoulMatcher, LoL	—
-UnfoldYou differentiates itself by combining anonymous self-expression (POV Cards), psychology-driven compatibility (Love Soul), and progressive identity reveal (Unfold mechanic) into a single coherent experience.
-
-Core thesis: People form better connections when they first connect through thoughts, emotions, and values — not photos and bios. UnfoldYou makes the anonymous layer the primary social layer and treats real identity as a reward earned through genuine interaction.
-
-2. Competitive Landscape & Positioning
-Direct Competitors
-App	Overlap	What UnfoldYou Does Differently
-Bumble/Hinge	Profile-based dating	UnfoldYou leads with anonymous POV cards, not photos
 Whisper/Fizz	Anonymous expression	UnfoldYou adds structured connections + progressive reveal
 BeReal	Authenticity/ephemeral	UnfoldYou is text-first with deeper psychological layer
 REDDI	Attachment-style matching	UnfoldYou uses broader psychology (coping, conflict, love language)
@@ -575,11 +563,15 @@ Phase 3 — Connections & Chat (Week 5–6) ✅
   Progressive reveal system (trigger-based stage transitions)
   Chat UI (anonymous mode vs. full mode)
 Phase 4 — Polish & Safety (Week 7–8) ✅
-  Notification system ✅ (State-First Sync + In-Chat Suppression)
-  POV Card sharing (OG image generation + deep links)
-  Report & block system (user-driven, no AI) ✅ (Basic reporting implemented)
-  Rate limiting and abuse prevention
-  Password/account recovery flows
+  - [x] Notification system (Realtime badge + Bell icon)
+  - [x] Chat Request Interface (Accept/Decline/Profile in chat)
+  - [x] Profile "Saved POVs" Layout Optimization
+  - [x] Global UI Refinements (Tighter Spacing, Unified App Shell)
+  - [x] Centralized Notification System (Global Bell in Header)
+  - [ ] POV Card sharing (OG image generation + deep links)
+  - [x] Report & block system (user-driven, no AI)
+  - [ ] Rate limiting and abuse prevention
+  - [ ] Password/account recovery flows
 Future Phase — AI Moderation
  AI-based content moderation pipeline (text classification, NSFW image detection)
  Voice note transcription + keyword scanning

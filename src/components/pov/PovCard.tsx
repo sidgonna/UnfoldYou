@@ -8,7 +8,7 @@ import styles from './PovCard.module.css'
 
 interface PovCardProps {
     card: PovCard
-    onUpdate?: () => void
+    onUpdate?: (action: 'delete' | 'update', cardId?: string) => void
 }
 
 function getTimeRemaining(expiresAt: string): string {
@@ -58,8 +58,7 @@ export default function PovCardComponent({ card, onUpdate }: PovCardProps) {
             setLocalLikes(card.likes_count)
         }
         setLikeLoading(false)
-        setLikeLoading(false)
-        // onUpdate?.() - Removing to prevent full list refresh. We use optimistic updates + realtime now.
+        // No onUpdate call needed for like, handled by optimistic UI + realtime
     }
 
     const handleSave = async () => {
@@ -73,14 +72,14 @@ export default function PovCardComponent({ card, onUpdate }: PovCardProps) {
             setLocalSaved(localSaved)
         }
         setSaveLoading(false)
-        onUpdate?.()
+        // No onUpdate call needed for save, handled by local state
     }
 
     const handleDelete = async () => {
         if (!card.is_own_card) return
 
         await deletePovCard(card.id)
-        onUpdate?.()
+        onUpdate?.('delete', card.id)
     }
 
     return (
@@ -190,7 +189,8 @@ export default function PovCardComponent({ card, onUpdate }: PovCardProps) {
 
                                     await navigator.share(shareData)
                                     return
-                                } catch (err) {
+                                } catch (err: any) {
+                                    if (err.name === 'AbortError') return
                                     // If file share fails (e.g. not supported), try generic text share
                                     try {
                                         await navigator.share({
@@ -199,7 +199,8 @@ export default function PovCardComponent({ card, onUpdate }: PovCardProps) {
                                             url: url
                                         })
                                         return
-                                    } catch (retryErr) {
+                                    } catch (retryErr: any) {
+                                        if (retryErr.name === 'AbortError') return
                                         // Ignore, fall through to clipboard
                                     }
                                 }

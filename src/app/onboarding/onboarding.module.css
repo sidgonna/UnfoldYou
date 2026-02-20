@@ -420,3 +420,157 @@
     background: var(--bg-secondary);
     color: var(--text-primary);
 }
+
+/* Media Step */
+.mediaUpload {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-sm);
+}
+
+.uploadBtn {
+    width: 100%;
+    height: 160px;
+    border: 2px dashed var(--border-subtle);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: var(--bg-elevated);
+    transition: all var(--transition-base);
+    color: var(--text-secondary);
+}
+
+.uploadBtn:hover {
+    border-color: var(--accent-primary);
+    background: rgba(139, 92, 246, 0.05); /* accent-primary-subtle? Using rgba for glass effect */
+    color: var(--accent-primary);
+}
+.uploadBtn input {
+    display: none;
+}
+.uploadBtn span {
+    font-weight: 500;
+}
+
+.previewContainer {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.photoPreview {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%; /* Circular profile photo */
+    object-fit: cover; /* Important for user uploaded photos */
+    border: 4px solid var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.removeBtn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: var(--accent-danger); /* Assuming value exists in global.css */
+    color: white;
+    border-radius: 50%;
+    border: 2px solid var(--bg-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    transition: transform 0.2s;
+    border: none;
+}
+
+.removeBtn:hover {
+    transform: scale(1.1);
+}
+
+.voiceControls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    background: var(--bg-elevated);
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    align-items: center;
+}
+
+.helperText {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: var(--space-sm);
+}
+
+.recordBtn {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    min-width: 140px;
+}
+
+.recordBtn.recording {
+    background: var(--accent-danger); /* Red for recording */
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.audioPreview {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+}
+
+.audioPreview audio {
+    flex: 1;
+    height: 36px;
+    border-radius: var(--radius-full);
+}
+
+.trashBtn {
+    background: var(--bg-surface-hover);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px; /* Square-ish */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.trashBtn:hover {
+    background: rgba(239, 68, 68, 0.1); /* Red tint */
+    color: var(--accent-danger);
+}
+
+.error {
+    border-color: var(--accent-danger) !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}

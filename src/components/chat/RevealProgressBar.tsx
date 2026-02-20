@@ -2,12 +2,29 @@
 
 import styles from './RevealProgressBar.module.css'
 
-const STAGES = [
-    { key: 'shadow', label: 'Shadow', icon: '🎭', threshold: 0 },
-    { key: 'whisper', label: 'Whisper', icon: '🤫', threshold: 20 },
-    { key: 'glimpse', label: 'Glimpse', icon: '👁️', threshold: 50 },
-    { key: 'soul', label: 'Soul', icon: '💫', threshold: 100 },
-    { key: 'unfold', label: 'Unfold', icon: '🦋', threshold: null },
+// Hardcoded thresholds for normal vs test mode
+const NORMAL_THRESHOLDS = {
+    shadow: 0,
+    whisper: 25,
+    glimpse: 50,
+    soul: 100,
+    unfold: null
+}
+
+const TEST_THRESHOLDS = {
+    shadow: 0,
+    whisper: 10,
+    glimpse: 15,
+    soul: 20,
+    unfold: null
+}
+
+const STAGES_META = [
+    { key: 'shadow', label: 'Shadow', icon: '🎭' },
+    { key: 'whisper', label: 'Whisper', icon: '🤫' },
+    { key: 'glimpse', label: 'Glimpse', icon: '👁️' },
+    { key: 'soul', label: 'Soul', icon: '💫' },
+    { key: 'unfold', label: 'Unfold', icon: '🦋' },
 ]
 
 interface RevealProgressBarProps {
@@ -21,6 +38,7 @@ interface RevealProgressBarProps {
     }
     currentUserId?: string
     lastConsentRequest?: string | null
+    isTestConnection?: boolean
 }
 
 export default function RevealProgressBar({ 
@@ -29,14 +47,21 @@ export default function RevealProgressBar({
     onUnlockRequest,
     consentStatus,
     currentUserId,
-    lastConsentRequest
+    lastConsentRequest,
+    isTestConnection = false
 }: RevealProgressBarProps) {
-    const currentIndex = STAGES.findIndex(s => s.key === currentStage)
+    const thresholds = isTestConnection ? TEST_THRESHOLDS : NORMAL_THRESHOLDS
+    const currentIndex = STAGES_META.findIndex(s => s.key === currentStage)
 
     // Calculate progress to next stage
-    const nextStage = STAGES[currentIndex + 1]
-    const currentThreshold = STAGES[currentIndex]?.threshold ?? 0
-    const nextThreshold = nextStage?.threshold
+    const nextStageIndex = currentIndex + 1
+    const nextStageKey = STAGES_META[nextStageIndex]?.key
+    const currentStageKey = STAGES_META[currentIndex]?.key
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const currentThreshold = (thresholds as any)[currentStageKey] ?? 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const nextThreshold = nextStageKey ? (thresholds as any)[nextStageKey] : null
 
     let progress = 100
     let statusMessage = ''
@@ -44,6 +69,7 @@ export default function RevealProgressBar({
     let isWaiting = false
     let isCooldown = false
     let cooldownRemaining = 0
+    const nextStageLabel = STAGES_META[nextStageIndex]?.label
 
     if (nextThreshold !== null && nextThreshold !== undefined) {
         // Standard progress calculation
@@ -56,7 +82,7 @@ export default function RevealProgressBar({
             isReadyToUnlock = true
             
             // Check consent status
-            if (consentStatus?.target_stage === nextStage.key) {
+            if (consentStatus?.target_stage === nextStageKey) {
                 const myStatus = consentStatus.requests?.[currentUserId || '']
                 const otherStatus = Object.values(consentStatus.requests || {}).find((s, i) => 
                     Object.keys(consentStatus.requests || {})[i] !== currentUserId
@@ -67,7 +93,7 @@ export default function RevealProgressBar({
                     isWaiting = true
                     statusMessage = 'Waiting for stranger...'
                 } else if (otherStatus === 'accept') {
-                    statusMessage = `Stranger wants to unlock ${nextStage.label}!`
+                    statusMessage = `Stranger wants to unlock ${nextStageLabel}!`
                 } else if (myStatus === 'declined') {
                     // Check cooldown
                     if (lastConsentRequest) {
@@ -84,12 +110,12 @@ export default function RevealProgressBar({
 
             if (!statusMessage) {
                 statusMessage = isReadyToUnlock 
-                    ? `Tap to unlock ${nextStage.label}` 
-                    : `Waiting for ${nextStage.label}`
+                    ? `Tap to unlock ${nextStageLabel}` 
+                    : `Waiting for ${nextStageLabel}`
             }
 
         } else {
-            statusMessage = `${messageCount}/${nextThreshold} messages to ${nextStage.label}`
+            statusMessage = `${messageCount}/${nextThreshold} messages to ${nextStageLabel}`
         }
     } else {
         statusMessage = 'Fully Unfolded'
@@ -98,7 +124,7 @@ export default function RevealProgressBar({
     return (
         <div className={styles.container}>
             <div className={styles.stages}>
-                {STAGES.map((stage, i) => (
+                {STAGES_META.map((stage, i) => (
                     <div
                         key={stage.key}
                         className={`${styles.stage} ${i <= currentIndex ? styles.active :
@@ -130,7 +156,7 @@ export default function RevealProgressBar({
                 {isReadyToUnlock && (
                     <button 
                         className={styles.unlockBtn}
-                        onClick={() => onUnlockRequest?.(nextStage.key)}
+                        onClick={() => nextStageKey && onUnlockRequest?.(nextStageKey)}
                     >
                         Unlock
                     </button>

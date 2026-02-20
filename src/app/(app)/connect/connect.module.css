@@ -1,13 +1,14 @@
-.connect-page {
-    padding-bottom: calc(80px + var(--space-xl));
-}
-
 .connect-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-lg);
-    padding-top: var(--space-md);
+    margin-bottom: 0px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .connect-header h1 {
@@ -22,19 +23,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border: 2px solid var(--ink);
-    border-radius: 10px;
-    background: var(--surface);
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--accent-primary-light);
+    border-radius: 14px;
+    background: rgba(139, 92, 246, 0.15);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.15);
     text-decoration: none;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .request-badge-link:hover {
-    background: var(--canvas);
-    transform: translate(-1px, -1px);
-    box-shadow: 2px 2px 0px var(--shadow);
+    background: var(--accent-primary);
+    border-color: #fff;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
 }
 
 .request-badge-icon {

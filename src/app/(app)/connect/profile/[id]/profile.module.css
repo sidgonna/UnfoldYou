@@ -218,23 +218,21 @@
 .decline-btn {
     flex: 2;
     padding: 14px;
-    background: rgba(255, 255, 255, 0.9);
-    /* More opaque */
-    border: 2px solid #C1292E;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--accent-danger);
     border-radius: 14px;
-    color: #C1292E;
+    color: var(--accent-danger);
     font-size: 1rem;
-    font-weight: 700;
-    /* Bolder */
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .decline-btn:hover {
-    background: #fff;
+    background: rgba(239, 68, 68, 0.1);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(193, 41, 46, 0.2);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
 }
 
 .decline-btn:disabled {
@@ -251,12 +249,10 @@
     border-radius: 14px;
     color: #fff;
     font-size: 1rem;
-    font-weight: 700;
-    /* Bolder */
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
-    /* Glow */
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 .accept-btn:hover {
@@ -285,10 +281,10 @@
 }
 
 .popup-card {
-    background: var(--surface, #fff);
-    border: 3px solid var(--ink, #1A1A2E);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
     border-radius: 20px;
-    box-shadow: 6px 6px 0px var(--ink, #1A1A2E);
+    box-shadow: var(--shadow-lg);
     padding: 32px 28px;
     max-width: 340px;
     width: 90%;
@@ -307,13 +303,13 @@
 .popup-title {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--ink, #1A1A2E);
+    color: var(--text-primary);
     margin: 0;
 }
 
 .popup-text {
     font-size: 0.9rem;
-    color: var(--storm, #3D5A80);
+    color: var(--text-secondary);
     margin: 0;
 }
 

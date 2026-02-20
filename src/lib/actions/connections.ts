@@ -372,7 +372,7 @@ export async function fetchPendingRequests() {
     // Incoming requests (I'm the recipient)
     let incomingQuery = supabase
         .from('connections')
-        .select('id, requester_id, connection_type, status, request_message, created_at, verification_code, code_expires_at, code_attempts')
+        .select('*')
         .eq('recipient_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
@@ -386,7 +386,7 @@ export async function fetchPendingRequests() {
     // Outgoing requests (I'm the requester)
     let outgoingQuery = supabase
         .from('connections')
-        .select('id, recipient_id, connection_type, status, request_message, created_at')
+        .select('*')
         .eq('requester_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
@@ -630,4 +630,97 @@ export async function getConnectionStatus(otherUserId: string): Promise<{ data: 
             connectionType: data.connection_type,
         },
     }
+}
+// ==================== MODERATION & MANAGEMENT ====================
+
+export async function disconnectUser(connectionId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Not authenticated' }
+
+    // Verify ownership
+    const { data: connection } = await supabase
+        .from('connections')
+        .select('id, requester_id, recipient_id')
+        .eq('id', connectionId)
+        .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .single()
+
+    if (!connection) {
+        return { error: 'Connection not found or authorized' }
+    }
+
+    const { error } = await supabase
+        .from('connections')
+        .delete()
+        .eq('id', connectionId)
+
+    if (error) {
+        console.error('Disconnect error:', error)
+        return { error: 'Failed to disconnect' }
+    }
+
+    return { success: true }
+}
+
+export async function blockUser(targetUserId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Not authenticated' }
+
+    if (targetUserId === user.id) return { error: 'Cannot block yourself' }
+
+    // 1. Create block record
+    const { error: blockError } = await supabase
+        .from('blocked_users')
+        .insert({
+            blocker_id: user.id,
+            blocked_id: targetUserId,
+        })
+
+    if (blockError) {
+        if (blockError.code === '23505') return { error: 'User already blocked' }
+        console.error('Block user error:', blockError)
+        return { error: 'Failed to block user' }
+    }
+
+    // 2. Delete any existing connection (active or pending)
+    const { error: deleteError } = await supabase
+        .from('connections')
+        .delete()
+        .or(
+            `and(requester_id.eq.${user.id},recipient_id.eq.${targetUserId}),` +
+            `and(requester_id.eq.${targetUserId},recipient_id.eq.${user.id})`
+        )
+
+    if (deleteError) {
+        console.error('Error cleaning up connection after block:', deleteError)
+        // We don't fail the action since the block is recorded
+    }
+
+    return { success: true }
+}
+
+export async function reportUser(targetUserId: string, reason: string, details?: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Not authenticated' }
+
+    if (targetUserId === user.id) return { error: 'Cannot report yourself' }
+
+    const { error } = await supabase
+        .from('reports')
+        .insert({
+            reporter_id: user.id,
+            reported_id: targetUserId,
+            reason,
+            details: details || null,
+        })
+
+    if (error) {
+        console.error('Report user error:', error)
+        return { error: 'Failed to submit report' }
+    }
+
+    return { success: true }
 }

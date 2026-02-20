@@ -1,0 +1,258 @@
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.2s ease;
+}
+
+.modal {
+    background: var(--bg-surface);
+    width: 95%;
+    max-width: 500px;
+    max-height: 90vh;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.closeBtn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    z-index: 2;
+}
+
+.header {
+    background: linear-gradient(135deg, var(--bg-surface-elevated), var(--bg-surface));
+    padding: var(--space-xl) var(--space-lg) var(--space-lg);
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.avatarWrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--space-md);
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg-surface-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-color);
+}
+
+.realAvatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.shadowAvatar {
+    font-size: 40px;
+}
+
+.name {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
+}
+
+.knownBadge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--color-success);
+    color: #fff;
+    border-radius: 20px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+}
+
+.content {
+    padding: var(--space-lg);
+    overflow-y: auto;
+}
+
+.section {
+    margin-bottom: var(--space-xl);
+}
+
+.sectionTitle {
+    font-size: var(--font-sm);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lockIcon {
+    font-size: 1rem;
+}
+
+.bio {
+    font-style: italic;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    font-size: var(--font-md);
+    text-align: center;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    justify-content: center;
+    margin-bottom: var(--space-md);
+}
+
+.tag {
+    background: var(--bg-surface-elevated);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.metaRow {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+}
+
+.metaBadge {
+    font-size: var(--font-xs);
+    background: var(--bg-surface-subtle);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--text-tertiary);
+}
+
+.revealItem {
+    background: var(--bg-surface-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+    border: 1px solid var(--border-subtle);
+    position: relative;
+    overflow: hidden;
+}
+
+.locked {
+    opacity: 0.7;
+    background: repeating-linear-gradient(
+        45deg,
+        var(--bg-surface-subtle),
+        var(--bg-surface-subtle) 10px,
+        rgba(0,0,0,0.03) 10px,
+        rgba(0,0,0,0.03) 20px
+    );
+}
+
+.revealLabel {
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-xs);
+}
+
+.blurText {
+    filter: blur(4px);
+    user-select: none;
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0,0,0,0.5);
+    background: rgba(255,255,255,0.05);
+    height: 1.5rem;
+    border-radius: 4px;
+    position: relative;
+}
+
+/* Overlay text on top of blur */
+.locked .blurText::after {
+    content: 'Locked'; 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    text-shadow: none;
+    filter: none;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    padding: 4px 12px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+.audioPlayer {
+    width: 100%;
+    height: 32px;
+}
+
+.emptyText {
+    font-size: var(--font-sm);
+    color: var(--text-disabled);
+    font-style: italic;
+}
+
+.intent {
+    font-size: var(--font-md);
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.habitTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.habitBadge {
+    font-size: var(--font-xs);
+    background: var(--color-secondary-subtle);
+    color: var(--color-secondary);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.personalGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xs);
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

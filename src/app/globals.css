@@ -94,6 +94,18 @@
   --max-width-app: 480px;
   --bottom-nav-height: 72px;
   --header-height: 60px;
+
+  /* Legacy/NeoBrutalism Aliases (for components using these tokens) */
+  --ink: var(--text-primary);
+  --ink-brutal: var(--text-primary);
+  --canvas: var(--bg-primary);
+  --surface: var(--bg-elevated);
+  --lavender: var(--accent-primary);
+  --storm: var(--text-secondary);
+  --muted: var(--text-muted);
+  --ember: var(--accent-danger);
+  --shadow: var(--shadow-md);
+  --brand-faint: rgba(139, 92, 246, 0.1);
 }
 
 /* ==================== RESET & BASE ==================== */
@@ -113,11 +125,13 @@ html {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--bg-primary);
+  background-color: #050505; /* Deep dark for desktop bg */
   color: var(--text-primary);
   line-height: 1.6;
-  min-height: 100dvh;
-  overflow-x: hidden;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
 }
 
 a {
@@ -153,20 +167,32 @@ ul, ol {
 
 /* ==================== APP CONTAINER ==================== */
 .app-container {
+  width: 100%;
   max-width: var(--max-width-app);
-  margin: 0 auto;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--bg-primary);
   position: relative;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.8);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  scrollbar-width: none; /* Hide for Firefox */
+  -ms-overflow-style: none; /* Hide for IE/Edge */
+}
+
+.app-container::-webkit-scrollbar {
+  display: none; /* Hide for Chrome/Safari */
 }
 
 .page {
-  padding: var(--space-md);
-  padding-bottom: calc(var(--bottom-nav-height) + var(--space-lg));
-  min-height: 100dvh;
+  padding: 0 var(--space-md) var(--space-md);
+  padding-bottom: var(--bottom-nav-height);
+  /* No min-height: 100dvh to avoid forced scroll */
 }
 
 .page-with-header {
-  padding-top: calc(var(--header-height) + var(--space-md));
+  padding-top: 0; /* Sticky header handles its own flow space */
 }
 
 /* ==================== TYPOGRAPHY ==================== */
@@ -393,7 +419,7 @@ textarea.input {
   width: 100%;
   max-width: var(--max-width-app);
   height: var(--bottom-nav-height);
-  background: rgba(10, 10, 15, 0.9);
+  background: rgba(10, 10, 15, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-subtle);
@@ -402,6 +428,8 @@ textarea.input {
   justify-content: space-around;
   z-index: 100;
   padding: 0 var(--space-sm);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
 }
 
 .nav-item {

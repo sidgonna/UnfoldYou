@@ -2,8 +2,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-xl);
-    padding-top: var(--space-md);
+    margin-bottom: 0px;
 }
 
 .feed-header h1 {
@@ -11,32 +10,62 @@
     font-weight: 700;
 }
 
-.compose-fab {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    border: none;
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.floating-compose {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-height) + 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: var(--max-width-app);
+    pointer-events: none;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 16px;
+    z-index: 500;
+}
+
+.floating-compose button {
+    pointer-events: auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3px solid var(--ink);
     background: var(--gradient-brand);
     color: #fff;
-    font-size: 1.5rem;
+    font-size: 2rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
-    transition: all 0.3s ease;
+    box-shadow: 4px 4px 0px var(--ink);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.compose-fab:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 24px rgba(168, 85, 247, 0.5);
+.floating-compose button:hover {
+    transform: scale(1.1) translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--ink);
+}
+
+.floating-compose button:active {
+    transform: scale(0.95) translate(1px, 1px);
+    box-shadow: 2px 2px 0px var(--ink);
+}
+
+.compose-fab {
+    display: none; /* Replaced by floating-compose */
 }
 
 .card-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
-    padding-bottom: calc(80px + var(--space-xl));
+    /* Handled by global .page */
 }
 
 .empty-feed {

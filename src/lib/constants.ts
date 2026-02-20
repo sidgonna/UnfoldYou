@@ -11,3 +11,32 @@ export const CARD_TEMPLATES = [
     { id: 'gold', label: 'Gold', gradient: 'linear-gradient(135deg, #0f0c29, #b8860b)' },
     { id: 'aurora', label: 'Aurora', gradient: 'linear-gradient(135deg, #6b2fa0, #24c6dc)' },
 ]
+
+export const HABIT_OPTIONS = [
+    { key: 'drinking', label: '🍷 Drinking', options: ['Never', 'Socially', 'Regularly'] },
+    { key: 'smoking', label: '🚬 Smoking', options: ['Never', 'Sometimes', 'Regularly'] },
+    { key: 'fitness', label: '💪 Fitness', options: ['Rarely', 'Sometimes', 'Active', 'Athlete'] },
+    { key: 'sleep', label: '😴 Sleep', options: ['Night owl', 'Early bird', 'Flexible'] },
+]
+
+export const INTENT_OPTIONS = [
+    { value: 'playful_spark', icon: '✨', label: 'Playful Spark', desc: 'Light, fun connections' },
+    { value: 'find_my_crowd', icon: '🫂', label: 'Find My Crowd', desc: 'Genuine friendships' },
+    { value: 'explore_love', icon: '💜', label: 'Explore Love', desc: 'Different perspectives on love' },
+    { value: 'something_real', icon: '🌹', label: 'Something Real', desc: 'Deep, meaningful bond' },
+]
+
+export const AVATARS = [
+    '🦊', '🐺', '🦉', '🐙', '🦋',
+    '🌙', '🔮', '🌊', '🌸', '⭐',
+    '🍀', '🎭', '💎', '🌀', '🪐',
+    '🦚', '🐉', '🌿', '🫧', '🔥',
+]
+
+export const INTEREST_OPTIONS = [
+    'Pop', 'Rock', 'Hip-Hop', 'R&B', 'Jazz', 'Classical', 'Electronic', 'Indie',
+    'Sci-Fi', 'Romance', 'Thriller', 'Comedy', 'Anime', 'Drama', 'Horror', 'Documentary',
+    'Fiction', 'Poetry', 'Self-Help', 'Philosophy',
+    'Travel', 'Cooking', 'Gaming', 'Fitness', 'Art', 'Photography', 'Fashion', 'Tech',
+    'Nature', 'Astrology', 'Psychology', 'Writing',
+]

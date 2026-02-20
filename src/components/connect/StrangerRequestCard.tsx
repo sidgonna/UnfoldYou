@@ -40,7 +40,7 @@ export default function StrangerRequestCard({
         setStatus('accepted')
         setTimeout(() => {
             onHandled?.()
-            router.push(`/chat/${connectionId}`)
+            router.push(`/connect/profile/${requesterId}`)
         }, 600)
     }
 

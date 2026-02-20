@@ -1,7 +1,7 @@
 .container {
     padding: 8px 16px 10px;
     background: var(--surface);
-    border-bottom: 2px solid var(--ink);
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .stages {
@@ -18,7 +18,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 2px solid var(--ink);
+    border: 1px solid var(--border-default);
     transition: all 0.3s;
 }
 
@@ -56,7 +56,7 @@
 .progressTrack {
     height: 6px;
     background: var(--canvas);
-    border: 1px solid var(--ink);
+    border: 1px solid var(--border-subtle);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 4px;

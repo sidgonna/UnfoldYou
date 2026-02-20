@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { HeightSchema, LocationSchema } from '@/lib/validators/onboarding'
 
 // ==================== TYPES ====================
 
@@ -49,7 +50,10 @@ export async function fetchShadowProfile(userId?: string) {
         .single()
 
     if (error) {
-        console.error('Fetch shadow profile error:', error)
+        // PGRST116 means record not found, which is expected during onboarding
+        if (error.code !== 'PGRST116') {
+            console.error('Fetch shadow profile error:', error)
+        }
         return { error: 'Failed to fetch shadow profile' }
     }
 
@@ -71,7 +75,10 @@ export async function fetchUserProfile() {
         .single()
 
     if (error) {
-        console.error('Fetch user profile error:', error)
+        // PGRST116 means record not found, which is expected during onboarding
+        if (error.code !== 'PGRST116') {
+            console.error('Fetch user profile error:', error)
+        }
         return { error: 'Failed to fetch profile' }
     }
 
@@ -114,8 +121,8 @@ export async function updateShadowProfile(updates: Partial<ShadowProfile>) {
     // Validate bio length
     if (allowedUpdates.bio) {
         const bio = allowedUpdates.bio as string
-        if (bio.length > 150) {
-            return { error: 'Bio must be 150 characters or less' }
+        if (bio.length > 500) {
+            return { error: 'Bio must be 500 characters or less' }
         }
     }
 
@@ -135,6 +142,99 @@ export async function updateShadowProfile(updates: Partial<ShadowProfile>) {
 
     revalidatePath('/you')
     return { success: true }
+}
+
+// ==================== UPDATE REAL PROFILE ====================
+
+export async function updateUserProfile(updates: Partial<UserProfile>) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Not authenticated' }
+
+    // 1. Strict Immutability Check
+    const FORBIDDEN_FIELDS = ['name', 'dob', 'gender']
+    for (const field of FORBIDDEN_FIELDS) {
+        if (updates[field as keyof UserProfile] !== undefined) {
+            return { error: `Cannot update ${field}. Please contact support.` }
+        }
+    }
+
+    // 2. Prepare allowed updates & Validation
+    const allowedUpdates: any = {}
+    
+    try {
+        if (updates.location_city !== undefined) {
+            allowedUpdates.location_city = LocationSchema.parse(updates.location_city)
+        }
+        if (updates.location_country !== undefined) {
+            allowedUpdates.location_country = LocationSchema.parse(updates.location_country)
+        }
+        if (updates.height_cm !== undefined) {
+            allowedUpdates.height_cm = HeightSchema.parse(updates.height_cm)
+        }
+        
+        // Pass-through fields (validated by UI mostly, or add simple checks)
+        if (updates.habits !== undefined) allowedUpdates.habits = updates.habits
+        if (updates.intent !== undefined) allowedUpdates.intent = updates.intent
+        if (updates.profile_picture_url !== undefined) allowedUpdates.profile_picture_url = updates.profile_picture_url
+        if (updates.voice_note_url !== undefined) allowedUpdates.voice_note_url = updates.voice_note_url
+        
+    } catch (e: any) {
+        return { error: e.errors?.[0]?.message || 'Validation failed' }
+    }
+
+    if (Object.keys(allowedUpdates).length === 0) {
+        return { error: 'No valid fields to update' }
+    }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update(allowedUpdates)
+        .eq('id', user.id)
+
+    if (error) {
+        console.error('Update user profile error:', error)
+        return { error: 'Failed to update profile' }
+    }
+
+    revalidatePath('/you')
+    return { success: true }
+}
+
+// ==================== LOVE SOUL ====================
+
+export interface LoveSoul {
+    id: string
+    q1_overwhelmed: string
+    q2_seen_appreciated: string
+    q3_disagreement: string
+    q_final_love: string
+    attachment_style: string | null
+    love_language: string | null
+    conflict_style: string | null
+}
+
+export async function fetchLoveSoul(userId?: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Not authenticated' }
+
+    const targetId = userId || user.id
+
+    const { data, error } = await supabase
+        .from('love_soul')
+        .select('*')
+        .eq('id', targetId)
+        .single()
+
+    if (error) {
+        if (error.code !== 'PGRST116') {
+            console.error('Fetch love soul error:', error)
+        }
+        return { error: 'Failed to fetch love soul' }
+    }
+
+    return { data: data as LoveSoul }
 }
 
 // ==================== SIGN OUT ====================

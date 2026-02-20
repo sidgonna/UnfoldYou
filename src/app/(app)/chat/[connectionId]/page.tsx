@@ -8,6 +8,10 @@ import { createClient } from '@/lib/supabase/client'
 import RevealProgressBar from '@/components/chat/RevealProgressBar'
 import RevealMilestonePopup from '@/components/chat/RevealMilestonePopup'
 import UnfoldRequestModal from '@/components/chat/UnfoldRequestModal'
+import PartnerProfileModal from '@/components/chat/PartnerProfileModal'
+import CodeEntryModal from '@/components/connect/CodeEntryModal'
+import { respondToConnectionRequest } from '@/lib/actions/connections'
+
 import ReportModal from '@/components/safety/ReportModal'
 import { useTyping } from '@/hooks/useTyping'
 import { groupMessagesByDate } from '@/lib/utils/chat'
@@ -28,10 +32,19 @@ export default function ChatRoomPage() {
     const [showMilestone, setShowMilestone] = useState<string | null>(null)
     const [milestoneData, setMilestoneData] = useState<Record<string, unknown> | null>(null)
     const [showUnfold, setShowUnfold] = useState(false)
+    const [showProfileModal, setShowProfileModal] = useState(false)
+    const [showCodeEntry, setShowCodeEntry] = useState(false)
+    const [responding, setResponding] = useState(false)
+
     const [reportModalOpen, setReportModalOpen] = useState(false)
     const [prevStage, setPrevStage] = useState<string>('')
     const [consentStatus, setConsentStatus] = useState<any>(null)
     const [lastConsentRequest, setLastConsentRequest] = useState<string | null>(null)
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -152,7 +165,10 @@ export default function ChatRoomPage() {
                 },
                 async (payload) => {
                     const updated = payload.new as ChatData['connection']
-                    setChatData(prev => prev ? { ...prev, connection: updated } : prev)
+                    setChatData(prev => prev ? {
+                        ...prev,
+                        connection: { ...prev.connection, ...updated }
+                    } : prev)
                     
                     // Update consent status locally from payload if present
                     if ((updated as any).consent_status) {
@@ -245,6 +261,29 @@ export default function ChatRoomPage() {
         }
     }
 
+    async function handleRequestResponse(action: 'accept' | 'decline') {
+        if (responding) return
+        setResponding(true)
+        const result = await respondToConnectionRequest(connectionId, action)
+        if (result.error) {
+            alert(result.error)
+            setResponding(false)
+        } else {
+            // Realtime listener will catch the status change
+            if (action === 'decline') {
+                router.push('/chat')
+            } else {
+                setResponding(false)
+                router.refresh()
+            }
+        }
+    }
+
+    const handleCodeSuccess = (cid: string) => {
+        setShowCodeEntry(false)
+        router.refresh()
+    }
+
     if (loading || !chatData) {
         return (
             <div className={styles.page}>
@@ -259,7 +298,12 @@ export default function ChatRoomPage() {
     const isAnonymous = connection.connection_type === 'stranger' && connection.reveal_stage !== 'unfold'
     const canUnfold = connection.reveal_stage === 'soul'
     const displayName = isAnonymous ? otherUser.shadow_name : (otherUser.real_name || otherUser.shadow_name)
-    const displayAvatar = isAnonymous ? otherUser.avatar_id : (otherUser.profile_photo ? '📷' : otherUser.avatar_id)
+    const displayAvatar = isAnonymous 
+        ? <span className={styles.headerAvatarText}>{otherUser.avatar_id}</span>
+        : (otherUser.profile_photo 
+            ? <img src={otherUser.profile_photo} alt="Avatar" className={styles.headerAvatarImg} />
+            : <span className={styles.headerAvatarText}>{otherUser.avatar_id}</span>
+          )
 
     // Group messages
     const messageGroups = groupMessagesByDate(messages)
@@ -270,18 +314,29 @@ export default function ChatRoomPage() {
             {/* Header */}
             <div className={styles.header}>
                 <button className={styles.backBtn} onClick={() => router.push('/chat')}>←</button>
-                <span className={styles.headerAvatar}>{displayAvatar}</span>
-                <div className={styles.headerInfo}>
-                    <span className={styles.headerName}>{displayName}</span>
-                    {isSomeoneTyping ? (
-                        <span className={styles.typingIndicator}>typing...</span>
-                    ) : (
-                        isAnonymous && (
-                            <span className={styles.headerStage}>
-                                {connection.reveal_stage}
-                            </span>
-                        )
-                    )}
+                
+                {/* Clickable Profile Area */}
+                <div 
+                    className={styles.headerProfile} 
+                    onClick={() => setShowProfileModal(true)}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <div className={styles.headerAvatarWrapper}>
+                        {displayAvatar}
+                    </div>
+                    <div className={styles.headerInfo}>
+                        <span className={styles.headerName}>{displayName}</span>
+                        {isSomeoneTyping ? (
+                            <span className={styles.typingIndicator}>typing...</span>
+                        ) : (
+                            isAnonymous && (
+                                <span className={styles.headerStage}>
+                                    {connection.reveal_stage}
+                                </span>
+                            )
+                        )}
+                    </div>
                 </div>
                 {canUnfold && (
                     <button className={styles.unfoldBtn} onClick={() => setShowUnfold(true)}>
@@ -314,6 +369,7 @@ export default function ChatRoomPage() {
                     consentStatus={consentStatus}
                     currentUserId={currentUserId}
                     lastConsentRequest={lastConsentRequest}
+                    isTestConnection={(chatData as any).isTestConnection}
                 />
             )}
 
@@ -341,7 +397,7 @@ export default function ChatRoomPage() {
                                     <>
                                         <span className={styles.bubbleText}>{msg.content}</span>
                                         <div className={styles.bubbleTime}>
-                                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {mounted && new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             {msg.sender_id === currentUserId && (
                                                 <span className={`${styles.readReceipt} ${msg.is_read ? styles.read : ''}`}>
                                                     {msg.is_read ? '✓✓' : '✓'}
@@ -358,38 +414,107 @@ export default function ChatRoomPage() {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <div className={styles.inputBar}>
-                <textarea
-                    ref={(el) => {
-                        // Focus on mount for desktop, but maybe not mobile to avoid jumpiness
-                        // But for now, just keep the ref
-                        if (el && !inputRef.current) {
-                            inputRef.current = el
-                        }
-                    }}
-                    className={styles.textarea}
-                    value={input}
-                    onChange={(e) => {
-                        setInput(e.target.value)
-                        handleTyping()
-                    }}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Type a message..."
-                    rows={1}
-                    // Don't disable input to keep focus/keyboard up
-                    // disabled={sending} 
-                    autoFocus
-                />
-                <button
-                    className={styles.sendBtn}
-                    onMouseDown={(e) => e.preventDefault()} // Prevent button from stealing focus
-                    onClick={handleSend}
-                    disabled={!input.trim() || sending}
-                >
-                    →
-                </button>
-            </div>
+            {/* Request Response CTA */}
+            {connection.status === 'pending' && connection.recipient_id === currentUserId && (
+                <div className={styles.responseBar}>
+                    {connection.request_message && (
+                        <div className={styles.requestMessageDisplay}>
+                            &ldquo;{connection.request_message}&rdquo;
+                        </div>
+                    )}
+                    <div className={styles.responseText}>
+                        {connection.connection_type === 'stranger' ? (
+                            <><strong>{otherUser.shadow_name}</strong> wants to connect anonymously.</>
+                        ) : (
+                            <><strong>{otherUser.shadow_name}</strong> shared a connection code with you.</>
+                        )}
+                    </div>
+                    <div className={styles.responseActions}>
+                        <button 
+                            className={styles.declineAction} 
+                            onClick={() => handleRequestResponse('decline')}
+                            disabled={responding}
+                        >
+                            Decline
+                        </button>
+                        <button 
+                            className={styles.profileAction}
+                            onClick={() => setShowProfileModal(true)}
+                        >
+                            View Profile
+                        </button>
+                        {connection.connection_type === 'known' ? (
+                            <button 
+                                className={styles.acceptAction}
+                                onClick={() => setShowCodeEntry(true)}
+                                disabled={responding}
+                            >
+                                Enter Code
+                            </button>
+                        ) : (
+                            <button 
+                                className={styles.acceptAction}
+                                onClick={() => handleRequestResponse('accept')}
+                                disabled={responding}
+                            >
+                                {responding ? 'Accepting...' : 'Accept ✓'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Waiting for acceptance for sender */}
+            {connection.status === 'pending' && connection.requester_id === currentUserId && (
+                <div className={styles.waitingBar}>
+                    <div className={styles.waitingText}>
+                        Waiting for <strong>{otherUser.shadow_name}</strong> to accept your request.
+                    </div>
+                    {connection.request_message && (
+                        <div className={styles.requestMessageDisplay}>
+                            &ldquo;{connection.request_message}&rdquo;
+                        </div>
+                    )}
+                    <button 
+                        className={styles.profileAction}
+                        onClick={() => setShowProfileModal(true)}
+                        style={{ padding: '8px 16px', fontSize: '0.8rem' }}
+                    >
+                        View Profile
+                    </button>
+                </div>
+            )}
+
+            {/* Input - Hidden if pending */}
+            {connection.status === 'accepted' && (
+                <div className={styles.inputBar}>
+                    <textarea
+                        ref={(el) => {
+                            if (el && !inputRef.current) {
+                                inputRef.current = el
+                            }
+                        }}
+                        className={styles.textarea}
+                        value={input}
+                        onChange={(e) => {
+                            setInput(e.target.value)
+                            handleTyping()
+                        }}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Type a message..."
+                        rows={1}
+                        autoFocus
+                    />
+                    <button
+                        className={styles.sendBtn}
+                        onMouseDown={(e) => e.preventDefault()} 
+                        onClick={handleSend}
+                        disabled={!input.trim() || sending}
+                    >
+                        →
+                    </button>
+                </div>
+            )}
 
             {/* Milestone Popup */}
             {showMilestone && (
@@ -403,12 +528,40 @@ export default function ChatRoomPage() {
                 />
             )}
 
-            {/* Unfold Modal */}
-            {showUnfold && (
-                <UnfoldRequestModal
-                    shadowName={otherUser.shadow_name}
-                    onConfirm={handleUnfold}
-                    onClose={() => setShowUnfold(false)}
+            {/* Partner Profile Modal */}
+            {showProfileModal && chatData && (
+                <PartnerProfileModal
+                    onClose={() => setShowProfileModal(false)}
+                    shadowProfile={{
+                        shadow_name: otherUser.shadow_name,
+                        avatar_id: otherUser.avatar_id,
+                        pronouns: otherUser.pronouns,
+                        social_energy: otherUser.social_energy,
+                        bio: otherUser.bio,
+                        interests: otherUser.interests || []
+                    }}
+                    realProfile={{
+                        real_name: otherUser.real_name,
+                        profile_photo: otherUser.profile_photo,
+                        age: otherUser.age,
+                        height: otherUser.height,
+                        location: otherUser.location,
+                        voice_note_url: otherUser.voice_note_url,
+                        intent: otherUser.intent,
+                        habits: otherUser.habits
+                    }}
+                    revealStage={connection.reveal_stage}
+                    isKnownConnect={connection.connection_type === 'known'}
+                />
+            )}
+
+            {/* Code Entry Modal */}
+            {showCodeEntry && (
+                <CodeEntryModal
+                    connectionId={connectionId}
+                    requesterName={otherUser.shadow_name}
+                    onClose={() => setShowCodeEntry(false)}
+                    onSuccess={handleCodeSuccess}
                 />
             )}
         </div>
