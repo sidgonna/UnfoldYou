@@ -141,7 +141,7 @@ export async function sendConnectionRequest(recipientId: string, message?: strin
 
     if (error) {
         console.error('Send connection request error:', error)
-        return { error: 'Failed to send request' }
+        return { error: `Database error: ${error?.message || error?.code || 'Unknown DB error'}` }
     }
 
     // Trigger Notification
@@ -198,7 +198,7 @@ export async function generateKnownConnectionCode(recipientId: string) {
 
     if (error) {
         console.error('Generate known code error:', error)
-        return { error: 'Failed to generate code' }
+        return { error: `Database error: ${error?.message || error?.code || 'Unknown DB error'}` }
     }
 
     return {
