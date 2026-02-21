@@ -391,11 +391,7 @@ export async function fetchChatData(connectionId: string): Promise<{ error?: str
         .limit(50)
 
     // Check if test connection
-    const email = user.email || ''
-    const isTestConnection = 
-        email.startsWith('test') || 
-        email.endsWith('@example.com') || 
-        email.endsWith('@yopmail.com')
+    const isTestConnection = process.env.NEXT_PUBLIC_ENABLE_DEV_LOGIN === 'true'
 
     return {
         data: {

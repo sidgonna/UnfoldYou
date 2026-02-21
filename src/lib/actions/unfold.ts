@@ -36,11 +36,7 @@ export async function submitStageConsent(connectionId: string, stage: string, ac
 
     // --- VALIDATION: Thresholds ---
     // Determine thresholds (Test vs Normal)
-    // Note: Ideally connection would store 'is_test' flag, but checking email again is safe
-    let isTestMode = false
-    const { data: userData } = await supabase.auth.admin.getUserById(user.id) // safer to query admin if possible, but here 'user' is from session
-    const email = user.email || ''
-    if (email.startsWith('test') || email.endsWith('@example.com') || email.endsWith('@yopmail.com')) isTestMode = true
+    const isTestMode = process.env.NEXT_PUBLIC_ENABLE_DEV_LOGIN === 'true'
     
     // Limits
     const thresholds = isTestMode 
