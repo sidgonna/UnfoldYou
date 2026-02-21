@@ -141,25 +141,28 @@ export async function fetchFeedCards(page: number = 0, pageSize: number = 20) {
         return { data: [] }
     }
 
-    // Get unique creator IDs to fetch their shadow profiles
+    // Enrich with profiles and check likes in parallel
     const creatorIds = [...new Set(cards.map((c) => c.creator_id))]
+    const cardIds = cards.map((c) => c.id)
 
-    const { data: shadowProfiles } = await supabase
-        .from('shadow_profiles')
-        .select('id, shadow_name, avatar_id')
-        .in('id', creatorIds)
+    const [shadowProfilesResult, userLikesResult] = await Promise.all([
+        supabase
+            .from('shadow_profiles')
+            .select('id, shadow_name, avatar_id')
+            .in('id', creatorIds),
+        supabase
+            .from('pov_likes')
+            .select('card_id')
+            .eq('user_id', user.id)
+            .in('card_id', cardIds)
+    ])
+
+    const shadowProfiles = shadowProfilesResult.data
+    const userLikes = userLikesResult.data
 
     const shadowMap = new Map(
         (shadowProfiles || []).map((sp) => [sp.id, sp])
     )
-
-    // Check which cards the current user has liked
-    const cardIds = cards.map((c) => c.id)
-    const { data: userLikes } = await supabase
-        .from('pov_likes')
-        .select('card_id')
-        .eq('user_id', user.id)
-        .in('card_id', cardIds)
 
     const likedCardIds = new Set((userLikes || []).map((l) => l.card_id))
 
@@ -219,23 +222,26 @@ export async function fetchNewPovCards(afterTimestamp: string) {
         return { data: [] }
     }
 
-    // Enrich with profiles (same logic as main feed)
+    // Enrich with profiles and check likes in parallel
     const creatorIds = [...new Set(cards.map((c) => c.creator_id))]
-    const { data: shadowProfiles } = await supabase
-        .from('shadow_profiles')
-        .select('id, shadow_name, avatar_id')
-        .in('id', creatorIds)
+    const cardIds = cards.map((c) => c.id)
+
+    const [shadowProfilesResult, userLikesResult] = await Promise.all([
+        supabase
+            .from('shadow_profiles')
+            .select('id, shadow_name, avatar_id')
+            .in('id', creatorIds),
+        supabase
+            .from('pov_likes')
+            .select('card_id')
+            .eq('user_id', user.id)
+            .in('card_id', cardIds)
+    ])
+
+    const shadowProfiles = shadowProfilesResult.data
+    const userLikes = userLikesResult.data
 
     const shadowMap = new Map((shadowProfiles || []).map((sp) => [sp.id, sp]))
-
-    // Check likes
-    const cardIds = cards.map((c) => c.id)
-    const { data: userLikes } = await supabase
-        .from('pov_likes')
-        .select('card_id')
-        .eq('user_id', user.id)
-        .in('card_id', cardIds)
-
     const likedCardIds = new Set((userLikes || []).map((l) => l.card_id))
 
     const enrichedCards: PovCard[] = cards.map((card) => ({

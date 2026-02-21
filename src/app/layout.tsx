@@ -1,5 +1,19 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import './skeleton.css'
+import { Inter, Outfit } from 'next/font/google'
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-body',
+})
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+})
 
 export const metadata: Metadata = {
   title: 'UnfoldYou — Express. Connect. Unfold.',
@@ -21,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body>
         <div className="app-container">
           {children}

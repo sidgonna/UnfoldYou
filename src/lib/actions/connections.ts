@@ -381,8 +381,6 @@ export async function fetchPendingRequests() {
         incomingQuery = incomingQuery.not('requester_id', 'in', blockedParams)
     }
 
-    const { data: incoming } = await incomingQuery
-
     // Outgoing requests (I'm the requester)
     let outgoingQuery = supabase
         .from('connections')
@@ -395,11 +393,18 @@ export async function fetchPendingRequests() {
         outgoingQuery = outgoingQuery.not('recipient_id', 'in', blockedParams)
     }
 
-    const { data: outgoing } = await outgoingQuery
+    // Run incoming and outgoing queries in parallel
+    const [incomingResult, outgoingResult] = await Promise.all([
+        incomingQuery,
+        outgoingQuery
+    ])
+
+    const incoming = incomingResult.data
+    const outgoing = outgoingResult.data
 
     // Get shadow profiles for all other users
-    const incomingUserIds = (incoming || []).map(r => r.requester_id)
-    const outgoingUserIds = (outgoing || []).map(r => r.recipient_id)
+    const incomingUserIds = (incoming || []).map((r: any) => r.requester_id)
+    const outgoingUserIds = (outgoing || []).map((r: any) => r.recipient_id)
     const allUserIds = [...new Set([...incomingUserIds, ...outgoingUserIds])]
 
     let profileMap = new Map<string, { shadow_name: string; avatar_id: string }>()
@@ -415,11 +420,11 @@ export async function fetchPendingRequests() {
 
     return {
         data: {
-            incoming: (incoming || []).map(r => ({
+            incoming: (incoming || []).map((r: any) => ({
                 ...r,
                 shadow_profile: profileMap.get(r.requester_id) || { shadow_name: 'Unknown', avatar_id: '👤' },
             })),
-            outgoing: (outgoing || []).map(r => ({
+            outgoing: (outgoing || []).map((r: any) => ({
                 ...r,
                 shadow_profile: profileMap.get(r.recipient_id) || { shadow_name: 'Unknown', avatar_id: '👤' },
             })),
@@ -510,29 +515,37 @@ export async function fetchConnections(includeLastMessage: boolean = false) {
     if (includeLastMessage) {
         const connectionIds = connections.map(c => c.id)
 
-        // Fetch last message per connection
-        for (const connId of connectionIds) {
-            const { data: lastMsg } = await supabase
-                .from('messages')
-                .select('content, created_at')
-                .eq('connection_id', connId)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single()
-
-            if (lastMsg) {
-                lastMessageMap.set(connId, lastMsg)
+        // Fetch all last messages and unread counts in parallel
+        const messagePromises = connectionIds.map(async (connId) => {
+            const [lastMsgResult, unreadResult] = await Promise.all([
+                supabase
+                    .from('messages')
+                    .select('content, created_at')
+                    .eq('connection_id', connId)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single(),
+                supabase
+                    .from('messages')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('connection_id', connId)
+                    .neq('sender_id', user.id)
+                    .eq('is_read', false)
+            ])
+            return {
+                connId,
+                lastMsg: lastMsgResult.data,
+                unreadCount: unreadResult.count ?? 0
             }
+        })
 
-            // Unread count
-            const { count } = await supabase
-                .from('messages')
-                .select('*', { count: 'exact', head: true })
-                .eq('connection_id', connId)
-                .neq('sender_id', user.id)
-                .eq('is_read', false)
+        const messageResults = await Promise.all(messagePromises)
 
-            unreadMap.set(connId, count ?? 0)
+        for (const res of messageResults) {
+            if (res.lastMsg) {
+                lastMessageMap.set(res.connId, res.lastMsg)
+            }
+            unreadMap.set(res.connId, res.unreadCount)
         }
     }
 
